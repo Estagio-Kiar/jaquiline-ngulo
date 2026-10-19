@@ -11,8 +11,8 @@ export const person = {
   tagline: "Tecnologia, inclusão e cultura ao serviço das mulheres angolanas",
   heroText:
     "Dirige a Women in Tech Angola, fundou a VEUMA e escreve para preservar a sabedoria de gerações. A tecnologia, defende, não tem género.",
-  photo: "/jaquiline-hero-768.webp",
-  photoSmall: "/jaquiline-hero-384.webp",
+  photo: "/jaquiline-hero-768.png",
+  photoSmall: "/jaquiline-hero-384.png",
 }
 
 /**
@@ -22,7 +22,7 @@ export const person = {
  * Se um ficheiro faltar, usa-se a fotografia de estúdio.
  */
 export const gallery = [
-  { src: "/jaquiline-hero-768.webp", position: "50% 25%" },
+  { src: "/jaquiline-hero-768.png", position: "50% 25%" },
   { src: "/fotos/pti-blazer-vermelho.avif", position: "50% 30%" },
   { src: "/fotos/bantumen-exterior-1.jpg", position: "50% 25%" },
   { src: "/fotos/chocolate-premio-1.png", position: "50% 20%" },
@@ -44,7 +44,7 @@ export const navLinks = [
   { label: "Impacto", href: "#impacto" },
   { label: "Percurso", href: "#percurso" },
   { label: "Obra", href: "#obra" },
-  { label: "Artigos", href: "#artigos" },
+  { label: "Conquistas", href: "#conquistas" },
   { label: "Contacto", href: "#contacto" },
 ]
 

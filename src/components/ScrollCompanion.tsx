@@ -93,7 +93,7 @@ export function ScrollCompanion() {
       <div
         ref={inner}
         style={{ opacity: 0, marginLeft: GUTTER }}
-        className="companion relative transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+        className="companion relative transition-[transform,opacity] duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
       >
         {/* Moldura em tons da paleta */}
         <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-full bg-caramel/80 lg:rounded-[2rem]" />

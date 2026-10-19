@@ -45,11 +45,12 @@ function Cover({ article }: { article: Article }) {
 
 export function Press() {
   return (
-    <section id="artigos" data-side="right" data-photo="3" className="bg-lavender">
+    /*  Alterei  o id artigos para conquistas de desativei a animacao nessa seccao*/
+    <section id="conquistas" data-side="none" data-photo="3" className="bg-lavender">
       <div className="mx-auto max-w-6xl px-5 py-16 md:py-24">
         <Reveal>
           <p className="font-heading text-[11px] font-semibold tracking-[0.25em] text-lip uppercase">
-            Artigos e reconhecimentos
+            Conquistas & reconhecimentos
           </p>
           <h2 className="mt-3 text-3xl font-extrabold sm:text-4xl">
             Na voz da imprensa

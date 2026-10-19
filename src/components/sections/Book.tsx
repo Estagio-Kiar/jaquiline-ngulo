@@ -5,7 +5,8 @@ import { book, goal } from "@/data/profile"
 
 export function Book() {
   return (
-    <section id="obra" data-side="right" data-photo="5" className="bg-card text-card-foreground">
+    /* Alterei desativei a animacao nessa seccao*/
+    <section id="obra" data-side="none" data-photo="5" className="bg-card text-card-foreground">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-2 md:py-24">
         <Reveal>
           <span className="grid size-12 place-items-center rounded-xl bg-caramel text-ink">
