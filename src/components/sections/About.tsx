@@ -1,9 +1,15 @@
 import { Reveal } from "@/components/Reveal"
-import { about } from "@/data/profile"
+import { useSiteContent } from "@/content/SiteContent"
 
 export function About() {
+  const { about } = useSiteContent()
   return (
-    <section id="sobre" data-side="right" data-photo="1" className="bg-lavender">
+    <section
+      id="sobre"
+      data-side="right"
+      data-photo="1"
+      className="bg-lavender"
+    >
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-5 md:py-24">
         <Reveal className="md:col-span-3">
           <p className="font-heading text-[11px] font-semibold tracking-[0.25em] text-lip uppercase">
@@ -32,6 +38,30 @@ export function About() {
               </li>
             ))}
           </ul>
+          {(about.location || about.experienceYears) && (
+            <dl className="mt-8 grid grid-cols-2 gap-3">
+              {about.location && (
+                <div className="rounded-xl bg-ink/5 p-4">
+                  <dt className="font-heading text-[10px] tracking-[0.18em] uppercase">
+                    Baseada em
+                  </dt>
+                  <dd className="mt-1 text-sm font-semibold">
+                    {about.location}
+                  </dd>
+                </div>
+              )}
+              {about.experienceYears ? (
+                <div className="rounded-xl bg-ink/5 p-4">
+                  <dt className="font-heading text-[10px] tracking-[0.18em] uppercase">
+                    Experiência
+                  </dt>
+                  <dd className="mt-1 text-sm font-semibold">
+                    {about.experienceYears}+ anos
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+          )}
         </Reveal>
       </div>
     </section>

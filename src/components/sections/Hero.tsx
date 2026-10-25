@@ -1,8 +1,9 @@
 import { ArrowRight } from "lucide-react"
 
-import { person } from "@/data/profile"
+import { useSiteContent } from "@/content/SiteContent"
 
 export function Hero() {
+  const { person } = useSiteContent()
   return (
     <section id="inicio" className="relative overflow-hidden pt-24 md:pt-28">
       <div

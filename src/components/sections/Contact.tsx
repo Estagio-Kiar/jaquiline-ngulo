@@ -1,21 +1,18 @@
 import { Mail } from "lucide-react"
 
 import { Reveal } from "@/components/Reveal"
-import { contact } from "@/data/profile"
-
-const links = [
-  { key: "linkedin", label: "LinkedIn", href: contact.linkedin },
-  { key: "instagram", label: "Instagram", href: contact.instagram },
-  { key: "wit", label: "Women in Tech Angola", href: contact.womenInTechSite },
-].filter((link) => link.href)
+import { useSiteContent } from "@/content/SiteContent"
 
 export function Contact() {
+  const { contact } = useSiteContent()
+  const links = contact.links
   return (
     <section id="contacto" data-side="none">
       <div className="mx-auto max-w-3xl px-5 py-20 text-center md:py-28">
         <Reveal>
           <h2 className="text-3xl font-extrabold sm:text-4xl">
-            Vamos construir <span className="text-lip">novas oportunidades?</span>
+            Vamos construir{" "}
+            <span className="text-lip">novas oportunidades?</span>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base/7">
             Convites para palestras, mentoria, parcerias com a Women in Tech
@@ -43,7 +40,9 @@ export function Contact() {
             ))}
           </div>
           {!contact.email && links.length === 0 && (
-            <p className="mt-6 text-sm">Canais de contacto oficiais em breve.</p>
+            <p className="mt-6 text-sm">
+              Canais de contacto oficiais em breve.
+            </p>
           )}
         </Reveal>
       </div>

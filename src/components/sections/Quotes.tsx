@@ -1,12 +1,13 @@
 import { Reveal } from "@/components/Reveal"
-import { quotes } from "@/data/profile"
+import { useSiteContent } from "@/content/SiteContent"
 
 export function Quotes() {
+  const { quotes } = useSiteContent()
   return (
     <section aria-label="Citações" data-side="left" data-photo="4">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 md:grid-cols-2 md:py-24">
         {quotes.map((quote, i) => (
-          <Reveal as="figure" key={quote.source} delay={i * 100}>
+          <Reveal as="figure" key={quote.text} delay={i * 100}>
             <p
               aria-hidden
               className="font-heading text-7xl leading-none font-extrabold text-lip"

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
 
-import { navLinks, person } from "@/data/profile"
+import { useNavLinks } from "@/content/useNavLinks"
+import { person } from "@/data/profile"
 
 export function Header() {
+  const navLinks = useNavLinks()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -24,7 +26,7 @@ export function Header() {
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 md:h-20">
         <a
-          href="#inicio"
+          href={navLinks[0].href}
           className="font-heading text-sm leading-tight font-extrabold tracking-wider uppercase"
         >
           <span className="block">{person.firstName}</span>
