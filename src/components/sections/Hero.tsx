@@ -39,6 +39,7 @@ export function Hero() {
         </div>
 
         <div className="order-1 md:order-2">
+          <div className="companion-float relative">
           <div className="relative mx-auto max-w-[20rem] md:max-w-sm">
             <div
               aria-hidden
@@ -55,6 +56,7 @@ export function Hero() {
               fetchPriority="high"
               className="relative aspect-[3/4] w-full rounded-3xl object-cover shadow-xl"
             />
+          </div>
           </div>
         </div>
       </div>
