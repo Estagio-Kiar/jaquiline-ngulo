@@ -1,5 +1,13 @@
 import type { LucideIcon } from "lucide-react"
-import { Briefcase, FileText, Mic, Newspaper, Share2, Tags } from "lucide-react"
+import {
+  Briefcase,
+  FileText,
+  Gauge,
+  Mic,
+  Newspaper,
+  Share2,
+  Tags,
+} from "lucide-react"
 
 import type { DataKey, DataMap } from "@/admin/data"
 import { longDate, minutes, monthYear } from "@/lib/format"
@@ -33,6 +41,9 @@ export type FieldDef = {
   optionsFrom?: DataKey
   /** Permite escrever um valor que não está nas opções. */
   allowCustom?: boolean
+  /** Limites para campos numéricos. */
+  min?: number
+  max?: number
 }
 
 export type CardView = {
@@ -396,8 +407,48 @@ const social: ResourceConfig<"social"> = {
   }),
 }
 
+const skills: ResourceConfig<"skills"> = {
+  key: "skills",
+  path: "competencias",
+  title: "Competências",
+  singular: "competência",
+  gender: "f",
+  description:
+    "Competências mostradas na secção «Sobre». A percentagem é opcional e aparece como barra de progresso.",
+  icon: Gauge,
+  layout: "list",
+  siteSection: "Secção «Sobre» → Competências",
+  sort: (a, b) => a.created_at.localeCompare(b.created_at),
+  fields: [
+    {
+      name: "name",
+      label: "Competência",
+      type: "text",
+      required: true,
+      half: true,
+      placeholder: "Liderança e advocacy",
+    },
+    {
+      name: "percentage",
+      label: "Domínio (%)",
+      type: "number",
+      half: true,
+      min: 0,
+      max: 100,
+      placeholder: "85",
+      hint: "Opcional, de 0 a 100.",
+    },
+  ],
+  view: (i) => ({
+    title: i.name,
+    meta:
+      i.percentage != null ? `${Math.round(i.percentage)}%` : "Sem percentagem",
+  }),
+}
+
 export const RESOURCES = [
   career,
+  skills,
   news,
   articles,
   categories,

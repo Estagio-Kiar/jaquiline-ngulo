@@ -15,6 +15,7 @@ import type {
   News,
   Post,
   Profile,
+  Skill,
   SocialLink,
 } from "@/lib/types"
 
@@ -39,6 +40,8 @@ export type SiteContent = {
   about: typeof defaults.about & {
     location?: string
     experienceYears?: number
+    /** Competências vindas da API, com percentagem opcional. */
+    skillLevels?: { name: string; percentage: number | null }[]
   }
   quotes: { text: string; source: string }[]
   journey: { date: string; title: string; text: string; company?: string }[]
@@ -190,13 +193,20 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       api.social.list(s),
       api.articles.list(s),
       api.episodes.list(s),
-    ]).then(([profile, career, news, social, articles, episodes]) => {
+      api.skills.list(s),
+    ]).then(([profile, career, news, social, articles, episodes, skills]) => {
       if (s.aborted) return
       const ok = <T,>(r: PromiseSettledResult<T[]>) =>
         r.status === "fulfilled" && Array.isArray(r.value) ? r.value : []
-      const anyOk = [profile, career, news, social, articles, episodes].some(
-        (r) => r.status === "fulfilled"
-      )
+      const anyOk = [
+        profile,
+        career,
+        news,
+        social,
+        articles,
+        episodes,
+        skills,
+      ].some((r) => r.status === "fulfilled")
       let next: SiteContent = { ...initial, status: anyOk ? "api" : "offline" }
       next = mergeProfile(next, ok(profile)[0])
       const c = ok(career)
@@ -207,6 +217,19 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       if (so.length) next.contact = mapSocial(so)
       next.articles = published(ok(articles))
       next.episodes = published(ok(episodes))
+      // Ignora registos que não sejam competências (versões antigas da API
+      // devolviam categorias nesta rota).
+      const sk = ok<Skill>(skills).filter((x) => !("slug" in x) && x.name)
+      if (sk.length) {
+        next.about = {
+          ...next.about,
+          skills: sk.map((x) => x.name),
+          skillLevels: sk
+            .slice()
+            .sort((a, b) => a.created_at.localeCompare(b.created_at))
+            .map((x) => ({ name: x.name, percentage: x.percentage })),
+        }
+      }
       setContent(next)
     })
     return () => ctrl.abort()

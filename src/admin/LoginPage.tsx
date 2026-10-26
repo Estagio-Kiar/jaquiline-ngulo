@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react"
 import { ArrowLeft, Eye, EyeOff, Lock, Mail } from "lucide-react"
 
-import { login } from "@/admin/auth"
+import { login, loginWithGoogle } from "@/admin/auth"
+import { GOOGLE_CLIENT_ID, GoogleButton } from "@/admin/google"
 import { Btn, Field, Input } from "@/admin/ui"
 import { person } from "@/data/profile"
 import { Link } from "@/lib/router"
@@ -23,6 +24,18 @@ export function LoginPage() {
     setLoading(true)
     try {
       await login(email, password)
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const google = async (idToken: string) => {
+    setError("")
+    setLoading(true)
+    try {
+      await loginWithGoogle(idToken)
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -149,6 +162,20 @@ export function LoginPage() {
               Entrar no painel
             </Btn>
           </form>
+
+          {GOOGLE_CLIENT_ID && (
+            <>
+              <div className="my-6 flex items-center gap-3 text-xs text-ink/40">
+                <span className="h-px flex-1 bg-ink/10" />
+                ou
+                <span className="h-px flex-1 bg-ink/10" />
+              </div>
+              <GoogleButton onCredential={google} />
+              <p className="mt-3 text-center text-xs text-ink/45">
+                Só para contas Google já associadas a um utilizador do painel.
+              </p>
+            </>
+          )}
         </div>
 
         <p className="text-center text-xs text-ink/40">

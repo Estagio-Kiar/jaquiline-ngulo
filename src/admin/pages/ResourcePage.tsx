@@ -55,7 +55,11 @@ function toPayload(fields: FieldDef[], values: Values, editing: boolean) {
     if (f.type === "date") {
       if (v) out[f.name] = new Date(`${v}T12:00:00`).toISOString()
     } else if (f.type === "number") {
-      if (v !== "") out[f.name] = Math.max(0, Math.round(Number(v)))
+      if (v !== "")
+        out[f.name] = Math.min(
+          f.max ?? Infinity,
+          Math.max(f.min ?? 0, Math.round(Number(v)))
+        )
     } else if (f.type === "select" && !f.allowCustom) {
       if (v) out[f.name] = v
     } else if (f.type === "slug") {
@@ -76,6 +80,10 @@ function validate(fields: FieldDef[], values: Values) {
       errors[f.name] = "Use um link completo, começado por https://"
     else if (f.type === "number" && v && Number.isNaN(Number(v)))
       errors[f.name] = "Indique um número."
+    else if (f.type === "number" && v && f.max != null && Number(v) > f.max)
+      errors[f.name] = `O valor máximo é ${f.max}.`
+    else if (f.type === "number" && v && f.min != null && Number(v) < f.min)
+      errors[f.name] = `O valor mínimo é ${f.min}.`
   }
   return errors
 }
@@ -141,7 +149,8 @@ function FieldInput({
         <Input
           {...common}
           type="number"
-          min={0}
+          min={field.min ?? 0}
+          max={field.max}
           inputMode="numeric"
           value={value}
           onChange={(e) => onChange(e.target.value)}

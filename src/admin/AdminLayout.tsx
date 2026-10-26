@@ -5,6 +5,7 @@ import {
   LogOut,
   Menu,
   UserRound,
+  UsersRound,
   X,
 } from "lucide-react"
 
@@ -47,6 +48,10 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
       icon: r.icon,
       count: r.key,
     })),
+  },
+  {
+    title: "Acesso",
+    items: [{ to: "/admin/conta", label: "Conta & equipa", icon: UsersRound }],
   },
 ]
 

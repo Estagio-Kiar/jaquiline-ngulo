@@ -4,6 +4,7 @@ import { AdminLayout } from "@/admin/AdminLayout"
 import { useSession } from "@/admin/auth"
 import { AdminDataProvider } from "@/admin/data"
 import { LoginPage } from "@/admin/LoginPage"
+import { AccountPage } from "@/admin/pages/AccountPage"
 import { Dashboard } from "@/admin/pages/Dashboard"
 import { ProfilePage } from "@/admin/pages/ProfilePage"
 import { ResourcePage } from "@/admin/pages/ResourcePage"
@@ -16,6 +17,7 @@ function Routes() {
   const segment = path.replace(/^\/admin\/?/, "").split("/")[0]
 
   if (segment === "perfil") return <ProfilePage />
+  if (segment === "conta") return <AccountPage />
   const resource = findResource(segment)
   if (resource) return <ResourcePage key={resource.key} config={resource} />
   return <Dashboard />

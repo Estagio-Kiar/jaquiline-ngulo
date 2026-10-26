@@ -15,6 +15,7 @@ import type {
   News,
   Post,
   Profile,
+  Skill,
   SocialLink,
 } from "@/lib/types"
 
@@ -28,6 +29,7 @@ export type DataMap = {
   articles: Post
   categories: Category
   episodes: Episode
+  skills: Skill
 }
 export type DataKey = keyof DataMap
 
@@ -42,6 +44,7 @@ const KEYS: DataKey[] = [
   "articles",
   "categories",
   "episodes",
+  "skills",
 ]
 
 const empty = <T,>(): Slot<T> => ({

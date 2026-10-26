@@ -62,6 +62,12 @@ export type Episode = Timestamps & {
   external_link: string | null
 }
 
+export type Skill = Timestamps & {
+  id: string
+  name: string
+  percentage: number | null
+}
+
 export type CareerHistory = Timestamps & {
   id: string
   role: string

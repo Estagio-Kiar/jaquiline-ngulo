@@ -43,6 +43,9 @@ O site consome a API de `jaquiline-ngulo-server` e tem um painel em **`/admin`**
   Artigos, Categorias, Podcast e Redes, com upload de capas (arrastar e largar).
   No primeiro acesso, o botão **Importar agora** copia o conteúdo atual do site para a API.
 - Só utilizadores com role `admin` podem remover registos (o botão fica oculto para editores).
+- **Competências** (`/skills`): editáveis no painel, com percentagem opcional; no site aparecem em «Sobre» (barras quando há percentagem).
+- **Conta & equipa** (`/admin/conta`): criar utilizadores (`/auth/sing_up`, até 4 contas, função admin ou editor) e associar a conta Google (`/auth/link-google`).
+- **Entrar com Google** (`/auth/google`): defina `VITE_GOOGLE_CLIENT_ID` (o mesmo `GOOGLE_CLIENT_ID` da API) e adicione os domínios do site em *Authorized JavaScript origins* no Google Cloud. Só funciona para contas já registadas.
 
 ### Estrutura
 

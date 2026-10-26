@@ -7,6 +7,7 @@ import type {
   News,
   Post,
   Profile,
+  Skill,
   SocialLink,
   UploadFolder,
   UploadResponse,
@@ -91,6 +92,20 @@ const MESSAGES: Record<number, string> = {
   413: "Ficheiro demasiado grande (máx. 5 MB).",
 }
 
+const AUTH_MESSAGES: Record<string, string> = {
+  "Credentials taken": "Já existe um utilizador com este e-mail.",
+  "Invalid Google token":
+    "A sessão Google é inválida ou expirou. Tente novamente.",
+  "Google email not verified":
+    "O e-mail desta conta Google não está verificado.",
+  "Google email does not match":
+    "A conta Google escolhida não corresponde ao seu e-mail.",
+  "Google account already linked to another user":
+    "Esta conta Google já está associada a outro utilizador.",
+  "Google account not registered":
+    "Esta conta Google não pertence a nenhum utilizador do painel.",
+}
+
 async function toError(res: Response) {
   let message = MESSAGES[res.status] ?? `Erro inesperado (${res.status}).`
   try {
@@ -102,6 +117,9 @@ async function toError(res: Response) {
       message = "E-mail ou palavra-passe incorretos."
     else if (raw === "Only manager")
       message = "Apenas administradores podem remover registos."
+    else if (raw && AUTH_MESSAGES[raw]) message = AUTH_MESSAGES[raw]
+    else if (typeof raw === "string" && /can not create \d+ users/i.test(raw))
+      message = "Limite de utilizadores atingido na API."
     else if (res.status === 400 && raw) message = `Dados inválidos: ${raw}`
   } catch {
     /* corpo sem JSON */
@@ -201,6 +219,27 @@ export const api = {
         method: "POST",
         body: { email, password },
       }),
+    /** Cria um utilizador do painel (a API limita o número de contas). */
+    signUp: (data: {
+      nome: string
+      email: string
+      password: string
+      role: "admin" | "editor"
+    }) =>
+      request<AuthResponse>("/auth/sing_up", { method: "POST", body: data }),
+    /** Entra com o id_token devolvido pelo Google Identity Services. */
+    google: (idToken: string) =>
+      request<AuthResponse>("/auth/google", {
+        method: "POST",
+        body: { id_token: idToken },
+      }),
+    /** Associa uma conta Google ao utilizador com sessão iniciada. */
+    linkGoogle: (idToken: string, email: string) =>
+      request<{ message: string }>("/auth/link-google", {
+        method: "POST",
+        body: { id_token: idToken, email },
+        auth: true,
+      }),
   },
   profile: resource<Profile>("/profile"),
   social: resource<SocialLink>("/social_medias"),
@@ -209,6 +248,7 @@ export const api = {
   news: resource<News>("/news"),
   episodes: resource<Episode>("/episodes"),
   career: resource<CareerHistory>("/career_history"),
+  skills: resource<Skill>("/skills"),
   upload(folder: UploadFolder, file: File) {
     const form = new FormData()
     form.append("file", file)

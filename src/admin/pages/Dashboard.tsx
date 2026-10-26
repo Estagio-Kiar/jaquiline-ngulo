@@ -11,7 +11,7 @@ import { useSession } from "@/admin/auth"
 import { useAdminData, type DataKey } from "@/admin/data"
 import { RESOURCES } from "@/admin/resources"
 import { Btn, Card, PageHeader, Skeleton, useToast } from "@/admin/ui"
-import { journey, person, press, about, quotes } from "@/data/profile"
+import { about, journey, person, press, quotes } from "@/data/profile"
 import { api } from "@/lib/api"
 import { parseMonthYear, relative } from "@/lib/format"
 import { Link } from "@/lib/router"
@@ -43,6 +43,12 @@ async function importStatic(state: ReturnType<typeof useAdminData>["state"]) {
         period: j.date,
         description: j.text,
       })
+      created++
+    }
+  }
+  if (state.skills.items.length === 0 && !state.skills.error) {
+    for (const name of about.skills) {
+      await api.skills.create({ name })
       created++
     }
   }
@@ -97,7 +103,8 @@ export function Dashboard() {
     !offline &&
     (state.profile.items.length === 0 ||
       state.career.items.length === 0 ||
-      state.news.items.length === 0)
+      state.news.items.length === 0 ||
+      (state.skills.items.length === 0 && !state.skills.error))
 
   const runImport = async () => {
     setImporting(true)
@@ -152,9 +159,9 @@ export function Dashboard() {
                 Importar o conteúdo atual do site
               </h2>
               <p className="mt-1.5 text-sm/6 text-white/70">
-                O perfil, o percurso e a imprensa que o site já mostra são
-                copiados para a API, para que os possa editar aqui. Só são
-                importadas as secções que ainda estão vazias.
+                O perfil, o percurso, as competências e a imprensa que o site já
+                mostra são copiados para a API, para que os possa editar aqui.
+                Só são importadas as secções que ainda estão vazias.
               </p>
             </div>
             <Btn
@@ -170,7 +177,7 @@ export function Dashboard() {
       )}
 
       {/* Contadores */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         {RESOURCES.map((r) => {
           const slot = state[r.key as DataKey]
           const Icon = r.icon
