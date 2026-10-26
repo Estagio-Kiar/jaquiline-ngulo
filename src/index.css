@@ -187,3 +187,29 @@
     );
   }
 }
+
+/* Foto que acompanha o scroll: flutua devagar (sobe/desce e inclina ligeiramente) */
+@keyframes companion-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate3d(0, -10px, 0) rotate(-0.8deg);
+  }
+  50% {
+    transform: translate3d(0, -16px, 0) rotate(0deg);
+  }
+  75% {
+    transform: translate3d(0, -8px, 0) rotate(0.8deg);
+  }
+}
+.companion-float {
+  animation: companion-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .companion-float {
+    animation: none;
+  }
+}
