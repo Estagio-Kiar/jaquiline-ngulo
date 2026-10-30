@@ -213,3 +213,147 @@
     animation: none;
   }
 }
+
+/*
+ * Botão «A obra» (Hero): ao passar o rato, levanta-se e ganha profundidade
+ * (camadas de sombra em vermelho-lábio formam a lateral do bloco 3D), com
+ * um brilho que atravessa a face. Entrada e saída suaves.
+ */
+.btn-3d {
+  --btn-depth: var(--lip);
+  --btn-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transform: perspective(600px) translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg);
+  box-shadow:
+    0 0 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    0 0 0 -6px rgb(18 24 27 / 0);
+  transition:
+    transform 0.45s var(--btn-ease),
+    box-shadow 0.45s var(--btn-ease),
+    background-color 0.35s ease,
+    color 0.35s ease;
+  will-change: transform;
+}
+/* Brilho que atravessa o botão */
+.btn-3d::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.28) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--btn-ease);
+}
+.btn-3d:hover,
+.btn-3d:focus-visible {
+  background-color: var(--ink);
+  color: #fff;
+  transform: perspective(600px) translate3d(-6px, -6px, 0) rotateX(6deg)
+    rotateY(-6deg);
+  box-shadow:
+    1px 1px 0 var(--btn-depth),
+    2px 2px 0 var(--btn-depth),
+    3px 3px 0 var(--btn-depth),
+    4px 4px 0 var(--btn-depth),
+    5px 5px 0 var(--btn-depth),
+    6px 6px 0 var(--btn-depth),
+    16px 18px 24px -6px rgb(18 24 27 / 0.45);
+}
+.btn-3d:hover::before,
+.btn-3d:focus-visible::before {
+  transform: translateX(120%);
+}
+/* Ao clicar, o bloco "afunda" */
+.btn-3d:active {
+  transform: perspective(600px) translate3d(-2px, -2px, 0) rotateX(2deg)
+    rotateY(-2deg);
+  box-shadow:
+    1px 1px 0 var(--btn-depth),
+    2px 2px 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    0 0 0 var(--btn-depth),
+    6px 8px 12px -6px rgb(18 24 27 / 0.4);
+  transition-duration: 0.12s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-3d,
+  .btn-3d::before {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-3d:hover,
+  .btn-3d:focus-visible,
+  .btn-3d:active {
+    transform: none;
+  }
+  .btn-3d::before {
+    display: none;
+  }
+}
+
+/*
+ * Barras de scroll do painel /admin (classe aplicada ao <html> pelo AdminApp).
+ * Chrome/Edge/Safari usam ::-webkit-scrollbar; o Firefox usa scrollbar-color.
+ */
+html.admin-mode ::-webkit-scrollbar,
+html.admin-mode::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+html.admin-mode ::-webkit-scrollbar-track,
+html.admin-mode::-webkit-scrollbar-track {
+  background: transparent;
+}
+html.admin-mode ::-webkit-scrollbar-thumb,
+html.admin-mode::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+  background-color: rgb(18 24 27 / 0.22);
+  transition: background-color 0.2s ease;
+}
+html.admin-mode ::-webkit-scrollbar-thumb:hover,
+html.admin-mode::-webkit-scrollbar-thumb:hover {
+  background-color: var(--lip);
+}
+html.admin-mode ::-webkit-scrollbar-thumb:active,
+html.admin-mode::-webkit-scrollbar-thumb:active {
+  background-color: #8f1d17;
+}
+html.admin-mode ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* Página do painel: calha clara para destacar o polegar */
+html.admin-mode::-webkit-scrollbar-track {
+  background: #ebebef;
+}
+/* Áreas escuras (barra lateral): polegar claro */
+html.admin-mode .scroll-dark::-webkit-scrollbar-thumb {
+  background-color: rgb(255 255 255 / 0.16);
+}
+html.admin-mode .scroll-dark::-webkit-scrollbar-thumb:hover {
+  background-color: var(--lip);
+}
+@supports not selector(::-webkit-scrollbar) {
+  html.admin-mode,
+  html.admin-mode * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(18 24 27 / 0.28) transparent;
+  }
+  html.admin-mode .scroll-dark {
+    scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  }
+}

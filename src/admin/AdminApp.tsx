@@ -29,8 +29,11 @@ export default function AdminApp() {
   useEffect(() => {
     const prev = document.title
     document.title = "Painel | Jaqueline Ngulo"
+    // Ativa as barras de scroll estilizadas do painel.
+    document.documentElement.classList.add("admin-mode")
     return () => {
       document.title = prev
+      document.documentElement.classList.remove("admin-mode")
     }
   }, [])
 

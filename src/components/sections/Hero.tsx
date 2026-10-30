@@ -31,7 +31,7 @@ export function Hero() {
             </a>
             <a
               href="#obra"
-              className="inline-flex items-center rounded-md border border-ink px-6 py-3 font-heading text-xs font-bold tracking-widest uppercase transition-colors hover:bg-ink hover:text-white"
+              className="btn-3d inline-flex items-center rounded-md border border-ink px-6 py-3 font-heading text-xs font-bold tracking-widest uppercase"
             >
               A obra
             </a>

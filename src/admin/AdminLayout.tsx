@@ -82,7 +82,10 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 pb-4" aria-label="Painel">
+      <nav
+        className="scroll-dark flex-1 overflow-y-auto px-3 pb-4"
+        aria-label="Painel"
+      >
         {GROUPS.map((g) => (
           <div key={g.title} className="mt-5 first:mt-2">
             <p className="px-3 pb-2 font-heading text-[10px] font-semibold tracking-[0.2em] text-white/35 uppercase">
