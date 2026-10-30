@@ -54,7 +54,10 @@ export function ScrollCompanion() {
       const last = sections[sections.length - 1]
       const end = last.getBoundingClientRect().bottom + window.scrollY
       const range = Math.max(end - first - vh, 1)
-      const progress = Math.min(Math.max((window.scrollY - first) / range, 0), 1)
+      const progress = Math.min(
+        Math.max((window.scrollY - first) / range, 0),
+        1
+      )
 
       const h = outerEl.offsetHeight
       const w = innerEl.offsetWidth
@@ -95,31 +98,37 @@ export function ScrollCompanion() {
         style={{ opacity: 0, marginLeft: GUTTER }}
         className="companion relative transition-[transform,opacity] duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
       >
-        {/* Moldura em tons da paleta */}
-        <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-full bg-caramel/80 lg:rounded-[2rem]" />
-        <div className="absolute -inset-3 -z-10 rounded-full bg-lavender/50 blur-2xl lg:rounded-[2rem]" />
+        {/* Efeito flutuante: oscila suavemente, independente do scroll */}
+        <div className="companion-float relative">
+          {/* Moldura em tons da paleta */}
+          <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-full bg-caramel/80 lg:rounded-[2rem]" />
+          <div className="absolute -inset-3 -z-10 rounded-full bg-lavender/50 blur-2xl lg:rounded-[2rem]" />
 
-        <div className="relative aspect-square overflow-hidden rounded-full bg-graphite shadow-2xl ring-4 ring-lavender lg:aspect-[3/4] lg:rounded-[2rem]">
-          {gallery.map((photo, i) => (
-            <img
-              key={photo.src}
-              ref={(el) => {
-                imgs.current[i] = el
-              }}
-              src={photo.src}
-              alt=""
-              loading={i === 0 ? "eager" : "lazy"}
-              onError={(e) => {
-                e.currentTarget.dataset.failed = "1"
-                e.currentTarget.style.display = "none"
-              }}
-              style={{ objectPosition: photo.position, opacity: i === 0 ? 1 : 0 }}
-              className="absolute inset-0 size-full object-cover saturate-[0.9] transition-opacity duration-700 motion-reduce:transition-none"
-            />
-          ))}
-          {/* Tom do fundo (#808688) sobre a foto para a integrar na paleta */}
-          <div className="absolute inset-0 bg-background/15 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-linear-to-t from-ink/40 via-transparent to-lavender/10" />
+          <div className="relative aspect-square overflow-hidden rounded-full bg-graphite shadow-2xl ring-4 ring-lavender lg:aspect-[3/4] lg:rounded-[2rem]">
+            {gallery.map((photo, i) => (
+              <img
+                key={photo.src}
+                ref={(el) => {
+                  imgs.current[i] = el
+                }}
+                src={photo.src}
+                alt=""
+                loading={i === 0 ? "eager" : "lazy"}
+                onError={(e) => {
+                  e.currentTarget.dataset.failed = "1"
+                  e.currentTarget.style.display = "none"
+                }}
+                style={{
+                  objectPosition: photo.position,
+                  opacity: i === 0 ? 1 : 0,
+                }}
+                className="absolute inset-0 size-full object-cover saturate-[0.9] transition-opacity duration-700 motion-reduce:transition-none"
+              />
+            ))}
+            {/* Tom do fundo (#808688) sobre a foto para a integrar na paleta */}
+            <div className="absolute inset-0 bg-background/15 mix-blend-multiply" />
+            <div className="absolute inset-0 bg-linear-to-t from-ink/40 via-transparent to-lavender/10" />
+          </div>
         </div>
       </div>
     </div>

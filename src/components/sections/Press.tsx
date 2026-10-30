@@ -2,9 +2,9 @@ import { useState } from "react"
 import { ArrowUpRight } from "lucide-react"
 
 import { Reveal } from "@/components/Reveal"
-import { press } from "@/data/profile"
+import { useSiteContent, type SiteContent } from "@/content/SiteContent"
 
-type Article = (typeof press)[number] & { image?: string }
+type Article = SiteContent["press"][number]
 
 /** Capa do artigo; se a imagem faltar, mostra um cartão tipográfico na paleta. */
 function Cover({ article }: { article: Article }) {
@@ -44,9 +44,15 @@ function Cover({ article }: { article: Article }) {
 }
 
 export function Press() {
+  const { press } = useSiteContent()
   return (
     /*  Alterei  o id artigos para conquistas de desativei a animacao nessa seccao*/
-    <section id="conquistas" data-side="none" data-photo="3" className="bg-lavender">
+    <section
+      id="conquistas"
+      data-side="none"
+      data-photo="3"
+      className="bg-lavender"
+    >
       <div className="mx-auto max-w-6xl px-5 py-16 md:py-24">
         <Reveal>
           <p className="font-heading text-[11px] font-semibold tracking-[0.25em] text-lip uppercase">
@@ -58,7 +64,7 @@ export function Press() {
         </Reveal>
         <ul className="mt-10 grid gap-6 md:grid-cols-2">
           {press.map((item, i) => (
-            <Reveal as="li" key={item.url} delay={i * 60}>
+            <Reveal as="li" key={`${item.url}-${i}`} delay={i * 60}>
               <a
                 href={item.url}
                 target="_blank"

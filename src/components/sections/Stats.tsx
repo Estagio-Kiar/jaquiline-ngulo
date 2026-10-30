@@ -2,30 +2,40 @@ import { useEffect, useRef, useState } from "react"
 
 import { stats, statsNote } from "@/data/profile"
 
+const reducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+/**
+ * Contador animado. Recomeça do zero sempre que a secção volta a entrar
+ * no ecrã (a contagem é reposta quando sai de vista).
+ */
 function Counter({ to }: { to: number }) {
   const ref = useRef<HTMLSpanElement>(null)
-  const [value, setValue] = useState(0)
+  const [value, setValue] = useState(() => (reducedMotion() ? to : 0))
 
   useEffect(() => {
     const el = ref.current
-    if (!el) return
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (reduce) {
-      setValue(to)
-      return
-    }
+    if (!el || reducedMotion()) return
+
     let frame = 0
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      observer.disconnect()
-      const start = performance.now()
-      const tick = (now: number) => {
-        const progress = Math.min((now - start) / 1200, 1)
-        setValue(Math.round(to * (1 - Math.pow(1 - progress, 3))))
-        if (progress < 1) frame = requestAnimationFrame(tick)
-      }
-      frame = requestAnimationFrame(tick)
-    })
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        cancelAnimationFrame(frame)
+        if (!entry.isIntersecting) {
+          // Fora de vista: volta a zero para recomeçar na próxima vez.
+          setValue(0)
+          return
+        }
+        const start = performance.now()
+        const tick = (now: number) => {
+          const progress = Math.min((now - start) / 1200, 1)
+          setValue(Math.round(to * (1 - Math.pow(1 - progress, 3))))
+          if (progress < 1) frame = requestAnimationFrame(tick)
+        }
+        frame = requestAnimationFrame(tick)
+      },
+      { threshold: 0.4 }
+    )
     observer.observe(el)
     return () => {
       observer.disconnect()
@@ -64,7 +74,9 @@ export function Stats() {
             </div>
           ))}
         </dl>
-        <p className="mt-10 text-center text-xs text-lavender/80">{statsNote}</p>
+        <p className="mt-10 text-center text-xs text-lavender/80">
+          {statsNote}
+        </p>
       </div>
     </section>
   )

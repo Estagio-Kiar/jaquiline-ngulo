@@ -1,8 +1,9 @@
 import { ArrowRight } from "lucide-react"
 
-import { person } from "@/data/profile"
+import { useSiteContent } from "@/content/SiteContent"
 
 export function Hero() {
+  const { person } = useSiteContent()
   return (
     <section id="inicio" className="relative overflow-hidden pt-24 md:pt-28">
       <div
@@ -30,7 +31,7 @@ export function Hero() {
             </a>
             <a
               href="#obra"
-              className="inline-flex items-center rounded-md border border-ink px-6 py-3 font-heading text-xs font-bold tracking-widest uppercase transition-colors hover:bg-ink hover:text-white"
+              className="btn-3d inline-flex items-center rounded-md border border-ink px-6 py-3 font-heading text-xs font-bold tracking-widest uppercase"
             >
               A obra
             </a>
@@ -38,6 +39,7 @@ export function Hero() {
         </div>
 
         <div className="order-1 md:order-2">
+          <div className="companion-float relative">
           <div className="relative mx-auto max-w-[20rem] md:max-w-sm">
             <div
               aria-hidden
@@ -54,6 +56,7 @@ export function Hero() {
               fetchPriority="high"
               className="relative aspect-[3/4] w-full rounded-3xl object-cover shadow-xl"
             />
+          </div>
           </div>
         </div>
       </div>
