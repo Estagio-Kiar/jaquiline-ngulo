@@ -10,6 +10,7 @@ import * as defaults from "@/data/profile"
 import { api, assetUrl } from "@/lib/api"
 import { monthYear } from "@/lib/format"
 import type {
+  AgendaEvent,
   CareerHistory,
   Episode,
   News,
@@ -49,6 +50,8 @@ export type SiteContent = {
   contact: { email: string; links: ContactLink[] }
   articles: Post[]
   episodes: Episode[]
+  /** Eventos da agenda, por ordem cronológica. */
+  agenda: AgendaEvent[]
   status: "loading" | "api" | "offline"
 }
 
@@ -74,6 +77,7 @@ const initial: SiteContent = {
   contact: staticContact(),
   articles: [],
   episodes: [],
+  agenda: [],
   status: "loading",
 }
 
@@ -194,44 +198,54 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       api.articles.list(s),
       api.episodes.list(s),
       api.skills.list(s),
-    ]).then(([profile, career, news, social, articles, episodes, skills]) => {
-      if (s.aborted) return
-      const ok = <T,>(r: PromiseSettledResult<T[]>) =>
-        r.status === "fulfilled" && Array.isArray(r.value) ? r.value : []
-      const anyOk = [
-        profile,
-        career,
-        news,
-        social,
-        articles,
-        episodes,
-        skills,
-      ].some((r) => r.status === "fulfilled")
-      let next: SiteContent = { ...initial, status: anyOk ? "api" : "offline" }
-      next = mergeProfile(next, ok(profile)[0])
-      const c = ok(career)
-      if (c.length) next.journey = mapCareer(c)
-      const n = ok(news)
-      if (n.length) next.press = mapNews(n)
-      const so = ok(social)
-      if (so.length) next.contact = mapSocial(so)
-      next.articles = published(ok(articles))
-      next.episodes = published(ok(episodes))
-      // Ignora registos que não sejam competências (versões antigas da API
-      // devolviam categorias nesta rota).
-      const sk = ok<Skill>(skills).filter((x) => !("slug" in x) && x.name)
-      if (sk.length) {
-        next.about = {
-          ...next.about,
-          skills: sk.map((x) => x.name),
-          skillLevels: sk
-            .slice()
-            .sort((a, b) => a.created_at.localeCompare(b.created_at))
-            .map((x) => ({ name: x.name, percentage: x.percentage })),
+      api.agenda.list(s),
+    ]).then(
+      ([profile, career, news, social, articles, episodes, skills, agenda]) => {
+        if (s.aborted) return
+        const ok = <T,>(r: PromiseSettledResult<T[]>) =>
+          r.status === "fulfilled" && Array.isArray(r.value) ? r.value : []
+        const anyOk = [
+          profile,
+          career,
+          news,
+          social,
+          articles,
+          episodes,
+          skills,
+          agenda,
+        ].some((r) => r.status === "fulfilled")
+        let next: SiteContent = {
+          ...initial,
+          status: anyOk ? "api" : "offline",
         }
+        next = mergeProfile(next, ok(profile)[0])
+        const c = ok(career)
+        if (c.length) next.journey = mapCareer(c)
+        const n = ok(news)
+        if (n.length) next.press = mapNews(n)
+        const so = ok(social)
+        if (so.length) next.contact = mapSocial(so)
+        next.articles = published(ok(articles))
+        next.episodes = published(ok(episodes))
+        next.agenda = ok<AgendaEvent>(agenda)
+          .filter((e) => e.data && e.evento)
+          .sort((a, b) => a.data.localeCompare(b.data))
+        // Ignora registos que não sejam competências (versões antigas da API
+        // devolviam categorias nesta rota).
+        const sk = ok<Skill>(skills).filter((x) => !("slug" in x) && x.name)
+        if (sk.length) {
+          next.about = {
+            ...next.about,
+            skills: sk.map((x) => x.name),
+            skillLevels: sk
+              .slice()
+              .sort((a, b) => a.created_at.localeCompare(b.created_at))
+              .map((x) => ({ name: x.name, percentage: x.percentage })),
+          }
+        }
+        setContent(next)
       }
-      setContent(next)
-    })
+    )
     return () => ctrl.abort()
   }, [])
 

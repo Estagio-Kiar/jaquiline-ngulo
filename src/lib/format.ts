@@ -43,6 +43,15 @@ export function longDate(iso?: string | null) {
   return `${d.getDate()} de ${MONTHS_LONG[d.getMonth()]} de ${d.getFullYear()}`
 }
 
+/** "29 de março de 2025, 18:30" */
+export function dateTime(iso?: string | null) {
+  if (!iso) return ""
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
+  const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+  return `${longDate(iso)}, ${time}`
+}
+
 /** "há 3 dias" */
 export function relative(iso?: string | null) {
   if (!iso) return ""

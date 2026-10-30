@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react"
 import { ArrowLeft, Eye, EyeOff, Lock, Mail } from "lucide-react"
 
 import { login, loginWithGoogle } from "@/admin/auth"
+import { ForgotPassword } from "@/admin/ForgotPassword"
 import { GOOGLE_CLIENT_ID, GoogleButton } from "@/admin/google"
 import { Btn, Field, Input } from "@/admin/ui"
 import { person } from "@/data/profile"
@@ -13,6 +14,8 @@ export function LoginPage() {
   const [show, setShow] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [notice, setNotice] = useState("")
+  const [forgot, setForgot] = useState(false)
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -84,96 +87,136 @@ export function LoginPage() {
         </Link>
 
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
-          <span className="grid size-14 place-items-center rounded-2xl bg-ink text-white shadow-lg">
-            <Lock className="size-6" />
-          </span>
-          <h1 className="mt-6 text-3xl font-extrabold text-ink">
-            Iniciar sessão
-          </h1>
-          <p className="mt-2 text-sm text-ink/55">
-            Acesso reservado à equipa de gestão do portfólio.
-          </p>
+          {forgot ? (
+            <ForgotPassword
+              initialEmail={email}
+              onCancel={() => setForgot(false)}
+              onDone={(mail) => {
+                setForgot(false)
+                setEmail(mail)
+                setPassword("")
+                setError("")
+                setNotice(
+                  "Palavra-passe redefinida. Entre com a nova palavra-passe."
+                )
+              }}
+            />
+          ) : (
+            <>
+              <span className="grid size-14 place-items-center rounded-2xl bg-ink text-white shadow-lg">
+                <Lock className="size-6" />
+              </span>
+              <h1 className="mt-6 text-3xl font-extrabold text-ink">
+                Iniciar sessão
+              </h1>
+              <p className="mt-2 text-sm text-ink/55">
+                Acesso reservado à equipa de gestão do portfólio.
+              </p>
 
-          <form
-            onSubmit={submit}
-            className="mt-8 flex flex-col gap-5"
-            noValidate
-          >
-            <Field label="E-mail" htmlFor="email">
-              <div className="relative">
-                <Mail className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-ink/35" />
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="username"
-                  autoFocus
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nome@exemplo.com"
-                  className="h-12 pl-10"
-                />
-              </div>
-            </Field>
+              <form
+                onSubmit={submit}
+                className="mt-8 flex flex-col gap-5"
+                noValidate
+              >
+                <Field label="E-mail" htmlFor="email">
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-ink/35" />
+                    <Input
+                      id="email"
+                      type="email"
+                      autoComplete="username"
+                      autoFocus
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="nome@exemplo.com"
+                      className="h-12 pl-10"
+                    />
+                  </div>
+                </Field>
 
-            <Field label="Palavra-passe" htmlFor="password">
-              <div className="relative">
-                <Lock className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-ink/35" />
-                <Input
-                  id="password"
-                  type={show ? "text" : "password"}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="h-12 pr-11 pl-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShow((v) => !v)}
-                  className="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-ink/40 hover:bg-ink/5 hover:text-ink"
-                  aria-label={
-                    show ? "Ocultar palavra-passe" : "Mostrar palavra-passe"
+                <Field
+                  label="Palavra-passe"
+                  htmlFor="password"
+                  aside={
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setError("")
+                        setNotice("")
+                        setForgot(true)
+                      }}
+                      className="text-xs font-semibold text-lip hover:underline"
+                    >
+                      Esqueci-me da palavra-passe
+                    </button>
                   }
                 >
-                  {show ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </button>
-              </div>
-            </Field>
+                  <div className="relative">
+                    <Lock className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-ink/35" />
+                    <Input
+                      id="password"
+                      type={show ? "text" : "password"}
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="h-12 pr-11 pl-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShow((v) => !v)}
+                      className="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-ink/40 hover:bg-ink/5 hover:text-ink"
+                      aria-label={
+                        show ? "Ocultar palavra-passe" : "Mostrar palavra-passe"
+                      }
+                    >
+                      {show ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
+                    </button>
+                  </div>
+                </Field>
 
-            {error && (
-              <p
-                role="alert"
-                className="rounded-xl bg-lip/10 px-4 py-3 text-sm font-medium text-lip"
-              >
-                {error}
-              </p>
-            )}
+                {notice && !error && (
+                  <p className="rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-700">
+                    {notice}
+                  </p>
+                )}
+                {error && (
+                  <p
+                    role="alert"
+                    className="rounded-xl bg-lip/10 px-4 py-3 text-sm font-medium text-lip"
+                  >
+                    {error}
+                  </p>
+                )}
 
-            <Btn
-              type="submit"
-              size="lg"
-              loading={loading}
-              className="mt-1 w-full"
-            >
-              Entrar no painel
-            </Btn>
-          </form>
+                <Btn
+                  type="submit"
+                  size="lg"
+                  loading={loading}
+                  className="mt-1 w-full"
+                >
+                  Entrar no painel
+                </Btn>
+              </form>
 
-          {GOOGLE_CLIENT_ID && (
-            <>
-              <div className="my-6 flex items-center gap-3 text-xs text-ink/40">
-                <span className="h-px flex-1 bg-ink/10" />
-                ou
-                <span className="h-px flex-1 bg-ink/10" />
-              </div>
-              <GoogleButton onCredential={google} />
-              <p className="mt-3 text-center text-xs text-ink/45">
-                Só para contas Google já associadas a um utilizador do painel.
-              </p>
+              {GOOGLE_CLIENT_ID && (
+                <>
+                  <div className="my-6 flex items-center gap-3 text-xs text-ink/40">
+                    <span className="h-px flex-1 bg-ink/10" />
+                    ou
+                    <span className="h-px flex-1 bg-ink/10" />
+                  </div>
+                  <GoogleButton onCredential={google} />
+                  <p className="mt-3 text-center text-xs text-ink/45">
+                    Só para contas Google já associadas a um utilizador do
+                    painel.
+                  </p>
+                </>
+              )}
             </>
           )}
         </div>

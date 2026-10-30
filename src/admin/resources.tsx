@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react"
 import {
   Briefcase,
+  CalendarDays,
   FileText,
   Gauge,
   Mic,
@@ -10,7 +11,7 @@ import {
 } from "lucide-react"
 
 import type { DataKey, DataMap } from "@/admin/data"
-import { longDate, minutes, monthYear } from "@/lib/format"
+import { dateTime, longDate, minutes, monthYear } from "@/lib/format"
 import type { UploadFolder } from "@/lib/types"
 
 export type FieldType =
@@ -19,6 +20,7 @@ export type FieldType =
   | "longtext"
   | "url"
   | "date"
+  | "datetime"
   | "number"
   | "image"
   | "select"
@@ -72,6 +74,8 @@ export type ResourceConfig<K extends DataKey = DataKey> = {
   sort?: (a: DataMap[K], b: DataMap[K]) => number
   /** Onde aparece no site, para orientar quem edita. */
   siteSection: string
+  /** Só administradores podem criar/editar (a API recusa outros perfis). */
+  adminOnly?: boolean
 }
 
 const byDate = (
@@ -446,9 +450,114 @@ const skills: ResourceConfig<"skills"> = {
   }),
 }
 
+export const AGENDA_TYPES = [
+  "Palestra",
+  "Workshop",
+  "Painel",
+  "Mentoria",
+  "Entrevista",
+  "Lançamento",
+  "Conferência",
+].map((v) => ({ value: v, label: v }))
+
+export const AGENDA_STATUS = [
+  "Confirmado",
+  "Por confirmar",
+  "Esgotado",
+  "Realizado",
+  "Adiado",
+  "Cancelado",
+].map((v) => ({ value: v, label: v }))
+
+const agenda: ResourceConfig<"agenda"> = {
+  key: "agenda",
+  path: "agenda",
+  title: "Agenda",
+  singular: "evento",
+  gender: "m",
+  description:
+    "Palestras, workshops e outras participações. Os próximos eventos aparecem na secção «Agenda» do site.",
+  icon: CalendarDays,
+  layout: "grid",
+  siteSection: "Secção «Agenda»",
+  adminOnly: true,
+  sort: (a, b) => b.data.localeCompare(a.data),
+  fields: [
+    {
+      name: "imagem",
+      label: "Imagem do evento",
+      type: "image",
+      folder: "agenda",
+    },
+    {
+      name: "evento",
+      label: "Nome do evento",
+      type: "text",
+      required: true,
+      placeholder: "Women in Tech Summit 2026",
+    },
+    {
+      name: "data",
+      label: "Data e hora",
+      type: "datetime",
+      required: true,
+      half: true,
+    },
+    {
+      name: "tipo",
+      label: "Tipo",
+      type: "select",
+      required: true,
+      half: true,
+      options: AGENDA_TYPES,
+      allowCustom: true,
+    },
+    {
+      name: "local",
+      label: "Local",
+      type: "text",
+      required: true,
+      half: true,
+      placeholder: "Luanda · Hotel Epic Sana ou Online",
+    },
+    {
+      name: "status",
+      label: "Estado",
+      type: "select",
+      required: true,
+      half: true,
+      options: AGENDA_STATUS,
+      allowCustom: true,
+    },
+    {
+      name: "link",
+      label: "Link (inscrição ou mais informação)",
+      type: "url",
+      required: true,
+      placeholder: "https://…",
+    },
+    {
+      name: "descricao",
+      label: "Descrição",
+      type: "textarea",
+      required: true,
+      placeholder: "Sobre o que vai falar, para quem é o evento…",
+    },
+  ],
+  view: (i) => ({
+    title: i.evento,
+    subtitle: i.descricao,
+    meta: [dateTime(i.data), i.local].filter(Boolean).join(" · "),
+    image: i.imagem,
+    badge: i.status,
+    link: i.link,
+  }),
+}
+
 export const RESOURCES = [
   career,
   skills,
+  agenda,
   news,
   articles,
   categories,

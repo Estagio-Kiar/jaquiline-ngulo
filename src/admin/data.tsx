@@ -9,6 +9,7 @@ import {
 
 import { api } from "@/lib/api"
 import type {
+  AgendaEvent,
   CareerHistory,
   Category,
   Episode,
@@ -30,6 +31,7 @@ export type DataMap = {
   categories: Category
   episodes: Episode
   skills: Skill
+  agenda: AgendaEvent
 }
 export type DataKey = keyof DataMap
 
@@ -45,6 +47,7 @@ const KEYS: DataKey[] = [
   "categories",
   "episodes",
   "skills",
+  "agenda",
 ]
 
 const empty = <T,>(): Slot<T> => ({

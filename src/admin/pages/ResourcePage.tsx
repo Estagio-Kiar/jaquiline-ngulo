@@ -37,12 +37,21 @@ type Values = Record<string, string>
 
 /* ---------------------------- conversões ---------------------------- */
 
+/** ISO → valor de <input type="datetime-local"> na hora local. */
+function toLocalInput(iso: string) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 function toForm(fields: FieldDef[], item?: Item): Values {
   const v: Values = {}
   for (const f of fields) {
     const raw = item?.[f.name]
     if (raw === null || raw === undefined) v[f.name] = ""
     else if (f.type === "date") v[f.name] = String(raw).slice(0, 10)
+    else if (f.type === "datetime") v[f.name] = toLocalInput(String(raw))
     else v[f.name] = String(raw)
   }
   return v
@@ -54,6 +63,8 @@ function toPayload(fields: FieldDef[], values: Values, editing: boolean) {
     const v = (values[f.name] ?? "").trim()
     if (f.type === "date") {
       if (v) out[f.name] = new Date(`${v}T12:00:00`).toISOString()
+    } else if (f.type === "datetime") {
+      if (v) out[f.name] = new Date(v).toISOString()
     } else if (f.type === "number") {
       if (v !== "")
         out[f.name] = Math.min(
@@ -133,6 +144,15 @@ function FieldInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="min-h-80 font-[450]"
+        />
+      )
+    case "datetime":
+      return (
+        <Input
+          {...common}
+          type="datetime-local"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
         />
       )
     case "date":
@@ -413,7 +433,13 @@ function Thumb({
 export function ResourcePage({ config }: { config: ResourceConfig }) {
   const { items, loading, error, reload } = useSlot(config.key)
   const session = useSession()
-  const canDelete = isAdmin(session?.user.role)
+  const admin = isAdmin(session?.user.role)
+  const canDelete = admin
+  // Recursos «adminOnly» (ex.: Agenda) só podem ser alterados por administradores.
+  const canWrite = !config.adminOnly || admin
+  const open = (item: Item | null) => {
+    if (canWrite) setEditing(item)
+  }
   const toast = useToast()
   const [query, setQuery] = useState("")
   const [editing, setEditing] = useState<Item | null | undefined>(undefined) // undefined = fechado, null = novo
@@ -467,14 +493,16 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
           <ExternalLink className="size-4" />
         </a>
       )}
-      <Btn
-        variant="ghost"
-        size="icon"
-        title="Editar"
-        onClick={() => setEditing(item)}
-      >
-        <Pencil />
-      </Btn>
+      {canWrite && (
+        <Btn
+          variant="ghost"
+          size="icon"
+          title="Editar"
+          onClick={() => open(item)}
+        >
+          <Pencil />
+        </Btn>
+      )}
       {canDelete && (
         <Btn
           variant="ghost"
@@ -496,11 +524,21 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
         title={config.title}
         description={config.description}
         actions={
-          <Btn onClick={() => setEditing(null)}>
-            <Plus /> Adicionar {config.singular}
-          </Btn>
+          canWrite ? (
+            <Btn onClick={() => open(null)}>
+              <Plus /> Adicionar {config.singular}
+            </Btn>
+          ) : undefined
         }
       />
+
+      {!canWrite && (
+        <Card className="flex items-center gap-3 border-caramel/40 bg-caramel/10 p-4 text-sm text-ink/80">
+          <AlertCircle className="size-4 shrink-0 text-[#7a5236]" />
+          Só administradores podem criar ou alterar {config.title.toLowerCase()}
+          . Pode consultar a lista.
+        </Card>
+      )}
 
       {(items.length > 4 || query) && (
         <div className="relative max-w-sm">
@@ -558,8 +596,8 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
               ? "Experimente outra pesquisa."
               : `Adicione ${config.gender === "f" ? "a primeira" : "o primeiro"} ${config.singular} — aparece de imediato no site.`}
           </p>
-          {!query && (
-            <Btn className="mt-6" onClick={() => setEditing(null)}>
+          {!query && canWrite && (
+            <Btn className="mt-6" onClick={() => open(null)}>
               <Plus /> Adicionar {config.singular}
             </Btn>
           )}
@@ -571,7 +609,7 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
             return (
               <li key={item.id}>
                 <Card className="group flex h-full cursor-pointer flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-ink/5">
-                  <div onClick={() => setEditing(item)} className="relative">
+                  <div onClick={() => open(item)} className="relative">
                     <Thumb src={v.image} className="aspect-[16/9]" />
                     {v.badge && (
                       <span className="absolute top-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-ink shadow-sm">
@@ -580,7 +618,7 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
                     )}
                   </div>
                   <div
-                    onClick={() => setEditing(item)}
+                    onClick={() => open(item)}
                     className="flex flex-1 flex-col gap-1.5 p-5"
                   >
                     {v.meta && (
@@ -615,7 +653,7 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
             return (
               <div
                 key={item.id}
-                onClick={() => setEditing(item)}
+                onClick={() => open(item)}
                 className="group flex cursor-pointer items-center gap-4 px-5 py-4 transition-colors hover:bg-ink/[0.02]"
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-lavender/40 text-ink">

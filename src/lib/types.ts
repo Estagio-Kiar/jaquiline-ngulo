@@ -68,6 +68,31 @@ export type Skill = Timestamps & {
   percentage: number | null
 }
 
+/** Evento da agenda (palestras, workshops, entrevistas…). */
+export type AgendaEvent = Timestamps & {
+  id: string
+  data: string
+  evento: string
+  tipo: string
+  descricao: string
+  local: string
+  status: string
+  link: string
+  imagem: string | null
+}
+
+export type UserRole = "admin" | "editor" | "user"
+
+/** Utilizador do painel tal como devolvido por GET /admin/users. */
+export type PanelUser = {
+  id: string
+  email: string
+  name: string | null
+  role: string
+  active: boolean
+  created_at: string
+}
+
 export type CareerHistory = Timestamps & {
   id: string
   role: string
@@ -99,4 +124,4 @@ export type UploadResponse = {
   url: string
 }
 
-export type UploadFolder = "articles" | "news" | "episodes"
+export type UploadFolder = "articles" | "news" | "episodes" | "agenda"

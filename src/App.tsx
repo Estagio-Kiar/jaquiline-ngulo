@@ -4,6 +4,7 @@ import { ScrollCompanion } from "@/components/ScrollCompanion"
 import { Footer } from "@/components/layout/Footer"
 import { Header } from "@/components/layout/Header"
 import { About } from "@/components/sections/About"
+import { Agenda } from "@/components/sections/Agenda"
 import { Articles } from "@/components/sections/Articles"
 import { Book } from "@/components/sections/Book"
 import { Contact } from "@/components/sections/Contact"
@@ -20,6 +21,7 @@ import { usePathname } from "@/lib/router"
 
 // O painel só é descarregado quando se visita /admin.
 const AdminApp = lazy(() => import("@/admin/AdminApp"))
+const ConfirmEmailPage = lazy(() => import("@/admin/ConfirmEmailPage"))
 
 function Home() {
   // Ao chegar de outra página com "/#secção", desloca até à secção.
@@ -47,6 +49,7 @@ function Home() {
         <Press />
         <Articles />
         <Podcast />
+        <Agenda />
         <Contact />
       </main>
     </>
@@ -55,6 +58,14 @@ function Home() {
 
 export function App() {
   const path = usePathname()
+
+  if (path === "/confirmar-email") {
+    return (
+      <Suspense fallback={null}>
+        <ConfirmEmailPage />
+      </Suspense>
+    )
+  }
 
   if (path === "/admin" || path.startsWith("/admin/")) {
     return (

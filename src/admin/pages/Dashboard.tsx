@@ -177,7 +177,7 @@ export function Dashboard() {
       )}
 
       {/* Contadores */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {RESOURCES.map((r) => {
           const slot = state[r.key as DataKey]
           const Icon = r.icon
@@ -267,6 +267,7 @@ export function Dashboard() {
             { to: "/admin/imprensa", label: "Adicionar notícia", icon: Plus },
             { to: "/admin/artigos", label: "Escrever artigo", icon: Plus },
             { to: "/admin/podcast", label: "Publicar episódio", icon: Plus },
+            { to: "/admin/agenda", label: "Novo evento na agenda", icon: Plus },
             {
               to: "/admin/percurso",
               label: "Novo marco no percurso",

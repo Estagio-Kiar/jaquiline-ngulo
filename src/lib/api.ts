@@ -1,16 +1,19 @@
 import type {
   AdminUser,
+  AgendaEvent,
   AuthResponse,
   CareerHistory,
   Category,
   Episode,
   News,
   Post,
+  PanelUser,
   Profile,
   Skill,
   SocialLink,
   UploadFolder,
   UploadResponse,
+  UserRole,
 } from "@/lib/types"
 
 /** URL base da API. Defina `VITE_API_URL` no `.env` do front. */
@@ -104,6 +107,14 @@ const AUTH_MESSAGES: Record<string, string> = {
     "Esta conta Google já está associada a outro utilizador.",
   "Google account not registered":
     "Esta conta Google não pertence a nenhum utilizador do painel.",
+  "Only active users":
+    "A sua conta ainda não está ativa. Confirme o e-mail para continuar.",
+  "Invalid or expired confirmation link":
+    "O link de confirmação é inválido ou já expirou.",
+  "Use the email confirmation code to reset your own password.":
+    "Para alterar a sua própria palavra-passe use «Esqueci-me da palavra-passe» no login.",
+  "User not found": "Utilizador não encontrado.",
+  "Agenda event not found": "Evento não encontrado.",
 }
 
 async function toError(res: Response) {
@@ -116,11 +127,15 @@ async function toError(res: Response) {
     if (raw === "Invalid credentials")
       message = "E-mail ou palavra-passe incorretos."
     else if (raw === "Only manager")
-      message = "Apenas administradores podem remover registos."
+      message = "Esta ação é reservada a administradores com conta ativa."
     else if (raw && AUTH_MESSAGES[raw]) message = AUTH_MESSAGES[raw]
     else if (typeof raw === "string" && /can not create \d+ users/i.test(raw))
       message = "Limite de utilizadores atingido na API."
     else if (res.status === 400 && raw) message = `Dados inválidos: ${raw}`
+    // Mensagens que a API já escreve em português (ex.: «Código inválido ou
+    // expirado.», «Confirme seu email antes de entrar.») passam tal e qual.
+    else if (typeof raw === "string" && /[ãõçáéíóúâêô]/i.test(raw))
+      message = raw
   } catch {
     /* corpo sem JSON */
   }
@@ -219,14 +234,43 @@ export const api = {
         method: "POST",
         body: { email, password },
       }),
-    /** Cria um utilizador do painel (a API limita o número de contas). */
+    /**
+     * Cria um utilizador do painel. A API envia um link de confirmação por
+     * e-mail e a conta só fica ativa depois de confirmada. Se o e-mail já
+     * existir, a API apenas reenvia o link.
+     */
     signUp: (data: {
       nome: string
       email: string
       password: string
-      role: "admin" | "editor"
+      role: UserRole
     }) =>
-      request<AuthResponse>("/auth/sing_up", { method: "POST", body: data }),
+      request<{ message: string }>("/auth/sing_up", {
+        method: "POST",
+        body: data,
+      }),
+    /** Ativa a conta com o token recebido no link do e-mail. */
+    confirmEmail: (token: string) =>
+      request<{ message: string }>("/auth/confirm-email", {
+        method: "POST",
+        body: { token },
+      }),
+    /** Pede um código de 8 dígitos para redefinir a palavra-passe. */
+    requestPasswordReset: (email: string) =>
+      request<{ message: string }>("/auth/password-reset/request", {
+        method: "POST",
+        body: { email },
+      }),
+    /** Define a nova palavra-passe com o código recebido por e-mail. */
+    confirmPasswordReset: (data: {
+      email: string
+      code: string
+      newPassword: string
+    }) =>
+      request<{ message: string }>("/auth/password-reset/confirm", {
+        method: "POST",
+        body: data,
+      }),
     /** Entra com o id_token devolvido pelo Google Identity Services. */
     google: (idToken: string) =>
       request<AuthResponse>("/auth/google", {
@@ -249,6 +293,17 @@ export const api = {
   episodes: resource<Episode>("/episodes"),
   career: resource<CareerHistory>("/career_history"),
   skills: resource<Skill>("/skills"),
+  agenda: resource<AgendaEvent>("/agenda"),
+  /** Gestão de utilizadores (só administradores). */
+  users: {
+    list: () => request<PanelUser[]>("/admin/users", { auth: true }),
+    setPassword: (id: string, newPassword: string) =>
+      request<{ message: string }>(`/admin/users/${id}/password`, {
+        method: "PATCH",
+        body: { newPassword },
+        auth: true,
+      }),
+  },
   upload(folder: UploadFolder, file: File) {
     const form = new FormData()
     form.append("file", file)
