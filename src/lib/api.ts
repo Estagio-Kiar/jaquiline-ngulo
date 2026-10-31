@@ -3,6 +3,7 @@ import type {
   AgendaEvent,
   AuthResponse,
   CareerHistory,
+  GalleryPhoto,
   Category,
   Episode,
   News,
@@ -28,6 +29,21 @@ export function assetUrl(src?: string | null) {
   if (/^(https?:)?\/\//.test(src) || src.startsWith("data:")) return src
   if (src.startsWith("/uploads/")) return `${API_URL}${src}`
   return src
+}
+
+/**
+ * Versão redimensionada de uma imagem do Cloudinary (largura máxima,
+ * qualidade e formato automáticos). Outros URLs ficam como estão.
+ */
+export function imageVariant(src: string | null | undefined, width: number) {
+  const url = assetUrl(src)
+  if (!url) return undefined
+  if (/res\.cloudinary\.com\/.+\/image\/upload\//.test(url))
+    return url.replace(
+      "/image/upload/",
+      `/image/upload/c_limit,w_${width},q_auto,f_auto/`
+    )
+  return url
 }
 
 /* ------------------------------------------------------------------ */
@@ -294,6 +310,7 @@ export const api = {
   career: resource<CareerHistory>("/career_history"),
   skills: resource<Skill>("/skills"),
   agenda: resource<AgendaEvent>("/agenda"),
+  gallery: resource<GalleryPhoto>("/gallery"),
   /** Gestão de utilizadores (só administradores). */
   users: {
     list: () => request<PanelUser[]>("/admin/users", { auth: true }),

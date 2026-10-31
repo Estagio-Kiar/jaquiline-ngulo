@@ -8,12 +8,13 @@ import {
 } from "react"
 
 import * as defaults from "@/data/profile"
-import { api, assetUrl } from "@/lib/api"
+import { api, assetUrl, imageVariant } from "@/lib/api"
 import { monthYear } from "@/lib/format"
 import type {
   AgendaEvent,
   CareerHistory,
   Episode,
+  GalleryPhoto,
   News,
   Post,
   Profile,
@@ -53,6 +54,8 @@ export type SiteContent = {
   episodes: Episode[]
   /** Eventos da agenda, por ordem cronológica. */
   agenda: AgendaEvent[]
+  /** Fotos que acompanham o scroll (índice = slot; 0 é a principal). */
+  gallery: { src: string; position: string }[]
   status: "loading" | "api" | "offline"
 }
 
@@ -79,6 +82,7 @@ const initial: SiteContent = {
   articles: [],
   episodes: [],
   agenda: [],
+  gallery: defaults.gallery,
   status: "loading",
 }
 
@@ -100,6 +104,23 @@ function label(platform: string) {
   return PLATFORM_LABELS[platform.toLowerCase()] ?? platform
 }
 
+/** Substitui, slot a slot, as fotos estáticas pelas que vêm da API. */
+function mergeGallery(items: GalleryPhoto[]): SiteContent["gallery"] {
+  const result = defaults.gallery.map((g) => ({ ...g }))
+  for (const item of items) {
+    const src = imageVariant(item.image_url, 768)
+    if (!src || item.slot < 0) continue
+    result[item.slot] = {
+      src,
+      position: item.position || result[item.slot]?.position || "50% 25%",
+    }
+  }
+  // Slots vazios no meio (sem foto estática nem da API) usam a principal.
+  for (let i = 0; i < result.length; i++)
+    if (!result[i]) result[i] = { ...result[0] }
+  return result
+}
+
 function mergeProfile(c: SiteContent, p?: Profile): SiteContent {
   if (!p) return c
   const paragraphs = p.bio_description
@@ -113,6 +134,13 @@ function mergeProfile(c: SiteContent, p?: Profile): SiteContent {
       badge: p.title || c.person.badge,
       tagline: p.tagline || c.person.tagline,
       heroText: p.bio || c.person.heroText,
+      // Foto do Hero vinda da API (Cloudinary) tem prioridade sobre a estática.
+      ...(p.photo_url
+        ? {
+            photo: imageVariant(p.photo_url, 768) ?? c.person.photo,
+            photoSmall: imageVariant(p.photo_url, 384) ?? c.person.photoSmall,
+          }
+        : {}),
     },
     about: {
       ...c.about,
@@ -210,6 +238,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
         api.episodes.list(s),
         api.skills.list(s),
         api.agenda.list(s),
+        api.gallery.list(s),
       ]).then(
         ([
           profile,
@@ -220,6 +249,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
           episodes,
           skills,
           agenda,
+          gallery,
         ]) => {
           if (s.aborted) return
           const ok = <T,>(r: PromiseSettledResult<T[]>) =>
@@ -233,6 +263,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
             episodes,
             skills,
             agenda,
+            gallery,
           ].some((r) => r.status === "fulfilled")
           // Numa recarga em segundo plano sem resposta da API, mantém o que
           // já está no ecrã em vez de voltar ao conteúdo estático.
@@ -250,6 +281,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
           if (so.length) next.contact = mapSocial(so)
           next.articles = published(ok(articles))
           next.episodes = published(ok(episodes))
+          next.gallery = mergeGallery(ok<GalleryPhoto>(gallery))
           next.agenda = ok<AgendaEvent>(agenda)
             .filter((e) => e.data && e.evento)
             .sort((a, b) => a.data.localeCompare(b.data))

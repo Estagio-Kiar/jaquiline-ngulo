@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 
-import { gallery } from "@/data/profile"
+import { useSiteContent } from "@/content/SiteContent"
 
 type Side = "left" | "right" | "none"
 
@@ -13,6 +13,8 @@ const DESKTOP = 1024
  * `data-photo` da secção visível. Em `none` desaparecem suavemente.
  */
 export function ScrollCompanion() {
+  // Fotos da API (Cloudinary) com recurso às estáticas, slot a slot.
+  const { gallery } = useSiteContent()
   const outer = useRef<HTMLDivElement>(null)
   const inner = useRef<HTMLDivElement>(null)
   const imgs = useRef<(HTMLImageElement | null)[]>([])

@@ -14,6 +14,8 @@ export type Profile = Timestamps & {
   bio_description: string | null
   location: string | null
   experience_years: number | null
+  /** Foto principal do Hero (Cloudinary ou /uploads/profile). */
+  photo_url?: string | null
 }
 
 export type SocialLink = Timestamps & {
@@ -124,4 +126,13 @@ export type UploadResponse = {
   url: string
 }
 
-export type UploadFolder = "articles" | "news" | "episodes" | "agenda"
+export type UploadFolder =
+  "articles" | "news" | "episodes" | "agenda" | "profile"
+
+/** Foto que acompanha o scroll. slot 0 = principal; 1-5 = secções. */
+export type GalleryPhoto = Timestamps & {
+  id: string
+  slot: number
+  image_url: string
+  position: string | null
+}
