@@ -6,12 +6,14 @@ import {
   Menu,
   UserRound,
   UsersRound,
+  BookOpen,
   X,
 } from "lucide-react"
 
 import { isAdmin, logout, useSession } from "@/admin/auth"
 import { useAdminData, type DataKey } from "@/admin/data"
 import { RESOURCES } from "@/admin/resources"
+import { HelpButton } from "@/admin/tutorial/HelpButton"
 import { person } from "@/data/profile"
 import { Link, usePathname } from "@/lib/router"
 import { cn } from "@/lib/utils"
@@ -52,6 +54,10 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: "Acesso",
     items: [{ to: "/admin/conta", label: "Conta & equipa", icon: UsersRound }],
+  },
+  {
+    title: "Ajuda",
+    items: [{ to: "/admin/tutorial", label: "Tutorial", icon: BookOpen }],
   },
 ]
 
@@ -221,9 +227,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <span className="text-lip">{person.lastName}</span>
           </p>
         </header>
-        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-10">
+        <main className="mx-auto max-w-7xl px-4 pt-8 pb-24 sm:px-8 lg:pt-10">
           {children}
         </main>
+        <HelpButton />
       </div>
     </div>
   )
