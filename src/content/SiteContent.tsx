@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react"
@@ -186,25 +187,31 @@ const Ctx = createContext<SiteContent>(initial)
 
 export function SiteContentProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<SiteContent>(initial)
+  const contentRef = useRef(content)
+  useEffect(() => {
+    contentRef.current = content
+  }, [content])
 
   useEffect(() => {
-    const ctrl = new AbortController()
-    const s = ctrl.signal
-    Promise.allSettled([
-      api.profile.list(s),
-      api.career.list(s),
-      api.news.list(s),
-      api.social.list(s),
-      api.articles.list(s),
-      api.episodes.list(s),
-      api.skills.list(s),
-      api.agenda.list(s),
-    ]).then(
-      ([profile, career, news, social, articles, episodes, skills, agenda]) => {
-        if (s.aborted) return
-        const ok = <T,>(r: PromiseSettledResult<T[]>) =>
-          r.status === "fulfilled" && Array.isArray(r.value) ? r.value : []
-        const anyOk = [
+    let ctrl = new AbortController()
+    let lastLoad = 0
+
+    const load = () => {
+      lastLoad = Date.now()
+      ctrl.abort()
+      ctrl = new AbortController()
+      const s = ctrl.signal
+      Promise.allSettled([
+        api.profile.list(s),
+        api.career.list(s),
+        api.news.list(s),
+        api.social.list(s),
+        api.articles.list(s),
+        api.episodes.list(s),
+        api.skills.list(s),
+        api.agenda.list(s),
+      ]).then(
+        ([
           profile,
           career,
           news,
@@ -213,40 +220,76 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
           episodes,
           skills,
           agenda,
-        ].some((r) => r.status === "fulfilled")
-        let next: SiteContent = {
-          ...initial,
-          status: anyOk ? "api" : "offline",
-        }
-        next = mergeProfile(next, ok(profile)[0])
-        const c = ok(career)
-        if (c.length) next.journey = mapCareer(c)
-        const n = ok(news)
-        if (n.length) next.press = mapNews(n)
-        const so = ok(social)
-        if (so.length) next.contact = mapSocial(so)
-        next.articles = published(ok(articles))
-        next.episodes = published(ok(episodes))
-        next.agenda = ok<AgendaEvent>(agenda)
-          .filter((e) => e.data && e.evento)
-          .sort((a, b) => a.data.localeCompare(b.data))
-        // Ignora registos que não sejam competências (versões antigas da API
-        // devolviam categorias nesta rota).
-        const sk = ok<Skill>(skills).filter((x) => !("slug" in x) && x.name)
-        if (sk.length) {
-          next.about = {
-            ...next.about,
-            skills: sk.map((x) => x.name),
-            skillLevels: sk
-              .slice()
-              .sort((a, b) => a.created_at.localeCompare(b.created_at))
-              .map((x) => ({ name: x.name, percentage: x.percentage })),
+        ]) => {
+          if (s.aborted) return
+          const ok = <T,>(r: PromiseSettledResult<T[]>) =>
+            r.status === "fulfilled" && Array.isArray(r.value) ? r.value : []
+          const anyOk = [
+            profile,
+            career,
+            news,
+            social,
+            articles,
+            episodes,
+            skills,
+            agenda,
+          ].some((r) => r.status === "fulfilled")
+          // Numa recarga em segundo plano sem resposta da API, mantém o que
+          // já está no ecrã em vez de voltar ao conteúdo estático.
+          if (!anyOk && lastLoad && contentRef.current.status === "api") return
+          let next: SiteContent = {
+            ...initial,
+            status: anyOk ? "api" : "offline",
           }
+          next = mergeProfile(next, ok(profile)[0])
+          const c = ok(career)
+          if (c.length) next.journey = mapCareer(c)
+          const n = ok(news)
+          if (n.length) next.press = mapNews(n)
+          const so = ok(social)
+          if (so.length) next.contact = mapSocial(so)
+          next.articles = published(ok(articles))
+          next.episodes = published(ok(episodes))
+          next.agenda = ok<AgendaEvent>(agenda)
+            .filter((e) => e.data && e.evento)
+            .sort((a, b) => a.data.localeCompare(b.data))
+          // Ignora registos que não sejam competências (versões antigas da API
+          // devolviam categorias nesta rota).
+          const sk = ok<Skill>(skills).filter((x) => !("slug" in x) && x.name)
+          if (sk.length) {
+            next.about = {
+              ...next.about,
+              skills: sk.map((x) => x.name),
+              skillLevels: sk
+                .slice()
+                .sort((a, b) => a.created_at.localeCompare(b.created_at))
+                .map((x) => ({ name: x.name, percentage: x.percentage })),
+            }
+          }
+          setContent(next)
         }
-        setContent(next)
-      }
-    )
-    return () => ctrl.abort()
+      )
+    }
+
+    load()
+
+    // Volta a pedir os dados quando o separador fica visível de novo
+    // (ex.: depois de editar no /admin noutro separador), no máximo a cada
+    // 15 s — assim as imagens novas do Cloudinary aparecem sem recarregar.
+    const refresh = () => {
+      if (
+        document.visibilityState === "visible" &&
+        Date.now() - lastLoad > 15_000
+      )
+        load()
+    }
+    document.addEventListener("visibilitychange", refresh)
+    window.addEventListener("focus", refresh)
+    return () => {
+      ctrl.abort()
+      document.removeEventListener("visibilitychange", refresh)
+      window.removeEventListener("focus", refresh)
+    }
   }, [])
 
   return <Ctx.Provider value={content}>{children}</Ctx.Provider>
