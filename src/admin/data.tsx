@@ -13,7 +13,6 @@ import type {
   AgendaEvent,
   CareerHistory,
   Category,
-  Episode,
   News,
   Post,
   Profile,
@@ -30,7 +29,6 @@ export type DataMap = {
   news: News
   articles: Post
   categories: Category
-  episodes: Episode
   skills: Skill
   agenda: AgendaEvent
   gallery: GalleryPhoto
@@ -47,7 +45,6 @@ const KEYS: DataKey[] = [
   "news",
   "articles",
   "categories",
-  "episodes",
   "skills",
   "agenda",
   "gallery",

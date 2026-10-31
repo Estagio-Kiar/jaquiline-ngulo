@@ -4,14 +4,13 @@ import {
   CalendarDays,
   FileText,
   Gauge,
-  Mic,
   Newspaper,
   Share2,
   Tags,
 } from "lucide-react"
 
 import type { DataKey, DataMap } from "@/admin/data"
-import { dateTime, longDate, minutes, monthYear } from "@/lib/format"
+import { dateTime, longDate, monthYear } from "@/lib/format"
 import type { UploadFolder } from "@/lib/types"
 
 export type FieldType =
@@ -309,63 +308,6 @@ const categories: ResourceConfig<"categories"> = {
   view: (i) => ({ title: i.name, meta: `/${i.slug}` }),
 }
 
-const episodes: ResourceConfig<"episodes"> = {
-  key: "episodes",
-  path: "podcast",
-  title: "Podcast",
-  singular: "episódio",
-  gender: "m",
-  description: "Episódios apresentados na secção «Podcast».",
-  icon: Mic,
-  layout: "grid",
-  siteSection: "Secção «Podcast»",
-  sort: byDate,
-  fields: [
-    {
-      name: "thumbnail_url",
-      label: "Capa do episódio",
-      type: "image",
-      folder: "episodes",
-    },
-    {
-      name: "title",
-      label: "Título",
-      type: "text",
-      required: true,
-      placeholder: "Episódio 01 — …",
-    },
-    {
-      name: "duration",
-      label: "Duração (minutos)",
-      type: "number",
-      half: true,
-      placeholder: "45",
-    },
-    {
-      name: "published_at",
-      label: "Data de publicação",
-      type: "date",
-      half: true,
-    },
-    {
-      name: "external_link",
-      label: "Link para ouvir",
-      type: "url",
-      placeholder: "https://open.spotify.com/…",
-    },
-    { name: "description", label: "Descrição", type: "textarea" },
-  ],
-  view: (i) => ({
-    title: i.title,
-    subtitle: i.description ?? undefined,
-    meta: [longDate(i.published_at), minutes(i.duration)]
-      .filter(Boolean)
-      .join(" · "),
-    image: i.thumbnail_url,
-    link: i.external_link,
-  }),
-}
-
 const social: ResourceConfig<"social"> = {
   key: "social",
   path: "redes",
@@ -561,7 +503,6 @@ export const RESOURCES = [
   news,
   articles,
   categories,
-  episodes,
   social,
 ] as ResourceConfig[]
 
