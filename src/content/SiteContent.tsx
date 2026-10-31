@@ -13,7 +13,6 @@ import { monthYear } from "@/lib/format"
 import type {
   AgendaEvent,
   CareerHistory,
-  Episode,
   GalleryPhoto,
   News,
   Post,
@@ -51,7 +50,6 @@ export type SiteContent = {
   press: PressItem[]
   contact: { email: string; links: ContactLink[] }
   articles: Post[]
-  episodes: Episode[]
   /** Eventos da agenda, por ordem cronológica. */
   agenda: AgendaEvent[]
   /** Fotos que acompanham o scroll (índice = slot; 0 é a principal). */
@@ -80,7 +78,6 @@ const initial: SiteContent = {
   press: defaults.press,
   contact: staticContact(),
   articles: [],
-  episodes: [],
   agenda: [],
   gallery: defaults.gallery,
   status: "loading",
@@ -235,7 +232,6 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
         api.news.list(s),
         api.social.list(s),
         api.articles.list(s),
-        api.episodes.list(s),
         api.skills.list(s),
         api.agenda.list(s),
         api.gallery.list(s),
@@ -246,7 +242,6 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
           news,
           social,
           articles,
-          episodes,
           skills,
           agenda,
           gallery,
@@ -260,7 +255,6 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
             news,
             social,
             articles,
-            episodes,
             skills,
             agenda,
             gallery,
@@ -280,7 +274,6 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
           const so = ok(social)
           if (so.length) next.contact = mapSocial(so)
           next.articles = published(ok(articles))
-          next.episodes = published(ok(episodes))
           next.gallery = mergeGallery(ok<GalleryPhoto>(gallery))
           next.agenda = ok<AgendaEvent>(agenda)
             .filter((e) => e.data && e.evento)
