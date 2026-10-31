@@ -28,43 +28,27 @@ export function About() {
           <h3 className="font-heading text-xs font-semibold tracking-[0.2em] uppercase">
             Competências
           </h3>
-          {about.skillLevels?.some((x) => x.percentage != null) ? (
-            <ul className="mt-5 space-y-4">
-              {about.skillLevels.map((skill) => (
-                <li key={skill.name}>
-                  <div className="flex items-baseline justify-between gap-3 text-sm font-semibold">
-                    <span>{skill.name}</span>
-                    {skill.percentage != null && (
-                      <span className="font-heading text-xs">
-                        {Math.round(skill.percentage)}%
-                      </span>
-                    )}
-                  </div>
-                  {skill.percentage != null && (
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/10">
-                      <div
-                        className="h-full rounded-full bg-ink"
-                        style={{
-                          width: `${Math.min(100, Math.max(0, skill.percentage ?? 0))}%`,
-                        }}
-                      />
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <ul className="mt-4 flex flex-wrap gap-2">
-              {about.skills.map((skill) => (
-                <li
-                  key={skill}
-                  className="rounded-full bg-ink px-4 py-2 text-sm text-card-foreground"
-                >
-                  {skill}
-                </li>
-              ))}
-            </ul>
-          )}
+          {/* Botões (pills); a percentagem, quando existe, aparece dentro do botão */}
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {(
+              about.skillLevels ??
+              about.skills.map((name) => ({ name, percentage: null }))
+            ).map((skill) => (
+              <li
+                key={skill.name}
+                className="inline-flex items-center gap-2 rounded-full bg-ink py-2 pr-2 pl-4 text-sm text-card-foreground"
+              >
+                <span className={skill.percentage == null ? "pr-2" : ""}>
+                  {skill.name}
+                </span>
+                {skill.percentage != null && (
+                  <span className="rounded-full bg-lavender px-2 py-0.5 font-heading text-[11px] font-bold text-ink">
+                    {Math.round(skill.percentage)}%
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
           {(about.location || about.experienceYears) && (
             <dl className="mt-8 grid grid-cols-2 gap-3">
               {about.location && (
