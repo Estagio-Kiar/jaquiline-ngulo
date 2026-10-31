@@ -176,10 +176,13 @@ export function ImageField({
   value,
   onChange,
   folder,
+  allowUrl = true,
 }: {
   value: string
   onChange: (url: string) => void
   folder: UploadFolder
+  /** Mostra o campo para colar um URL (desligar quando cada alteração é guardada de imediato). */
+  allowUrl?: boolean
 }) {
   const id = useId()
   const toast = useToast()
@@ -293,12 +296,14 @@ export function ImageField({
           onChange={(e) => upload(e.target.files?.[0])}
         />
       </div>
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="…ou cole o URL de uma imagem"
-        className="h-9 text-xs"
-      />
+      {allowUrl && (
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="…ou cole o URL de uma imagem"
+          className="h-9 text-xs"
+        />
+      )}
     </div>
   )
 }

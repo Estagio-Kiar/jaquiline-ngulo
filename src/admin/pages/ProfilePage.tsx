@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState, type ReactNode } from "react"
 import { Info, MapPin, Save, Sparkles, Undo2 } from "lucide-react"
 
 import { useSlot } from "@/admin/data"
+import { GalleryManager, previewSrc } from "@/admin/GalleryManager"
 import {
   Btn,
   Card,
   Field,
+  ImageField,
   Input,
   PageHeader,
   Skeleton,
@@ -25,6 +27,7 @@ type Values = {
   quote: string
   location: string
   experience_years: string
+  photo_url: string
 }
 
 const fromProfile = (p?: Profile): Values =>
@@ -37,6 +40,7 @@ const fromProfile = (p?: Profile): Values =>
         quote: p.quote ?? "",
         location: p.location ?? "",
         experience_years: p.experience_years?.toString() ?? "",
+        photo_url: p.photo_url ?? "",
       }
     : {
         // Sem perfil na API: parte do conteúdo atual do site.
@@ -47,6 +51,7 @@ const fromProfile = (p?: Profile): Values =>
         quote: quotes[0]?.text ?? "",
         location: "Luanda, Angola",
         experience_years: "",
+        photo_url: "",
       }
 
 function Section({
@@ -99,6 +104,7 @@ export function ProfilePage() {
       bio_description: v.bio_description.trim(),
       quote: v.quote.trim(),
       location: v.location.trim(),
+      photo_url: v.photo_url.trim(),
       ...(years ? { experience_years: Math.round(Number(years)) } : {}),
     }
     setSaving(true)
@@ -258,6 +264,29 @@ export function ProfilePage() {
           </Section>
 
           <Section
+            title="Fotografias"
+            description="A foto principal do topo do site e as fotos que acompanham o scroll."
+          >
+            <Field
+              label="Foto principal (topo do site)"
+              className="sm:col-span-2"
+              hint="Guardada com «Guardar alterações». Se ficar vazia, o site usa a fotografia de estúdio. Prefira fotos verticais (3:4)."
+            >
+              <ImageField
+                value={v.photo_url}
+                folder="profile"
+                onChange={(url) => setV((s) => ({ ...s, photo_url: url }))}
+              />
+            </Field>
+            <div className="sm:col-span-2">
+              <p className="mb-3 text-[13px] font-semibold text-ink">
+                Fotos que acompanham o scroll
+              </p>
+              <GalleryManager />
+            </div>
+          </Section>
+
+          <Section
             title="Citação em destaque"
             description="Aparece em grande, na secção de citações."
           >
@@ -282,7 +311,7 @@ export function ProfilePage() {
               <div className="absolute -top-10 -right-10 size-40 rounded-full bg-lavender/50 blur-2xl" />
               <div className="relative flex gap-4">
                 <img
-                  src={person.photoSmall}
+                  src={previewSrc(v.photo_url, person.photoSmall)}
                   alt=""
                   className="h-28 w-20 shrink-0 rounded-xl object-cover shadow-md"
                 />

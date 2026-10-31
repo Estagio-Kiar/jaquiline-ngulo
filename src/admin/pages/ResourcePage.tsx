@@ -404,8 +404,11 @@ function Thumb({
   src?: string | null
   className?: string
 }) {
-  const [failed, setFailed] = useState(false)
+  // Guarda o URL que falhou: ao trocar a imagem (upload novo), o cartão
+  // mostra-a logo, sem precisar de recarregar a página.
   const url = assetUrl(src)
+  const [failedUrl, setFailedUrl] = useState<string>()
+  const failed = !!url && failedUrl === url
   return (
     <div
       className={cn(
@@ -418,7 +421,7 @@ function Thumb({
           src={url}
           alt=""
           loading="lazy"
-          onError={() => setFailed(true)}
+          onError={() => setFailedUrl(url)}
           className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       ) : (

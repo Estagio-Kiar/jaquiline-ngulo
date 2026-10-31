@@ -8,8 +8,11 @@ type Article = SiteContent["press"][number]
 
 /** Capa do artigo; se a imagem faltar, mostra um cartão tipográfico na paleta. */
 function Cover({ article }: { article: Article }) {
-  const [failed, setFailed] = useState(false)
-  const showImage = article.image && !failed
+  // Guarda QUAL imagem falhou (e não apenas "falhou"): quando os dados da
+  // API chegam com uma imagem nova (ex.: Cloudinary), ela é mostrada mesmo
+  // que a imagem anterior deste cartão tenha dado erro.
+  const [failedSrc, setFailedSrc] = useState<string>()
+  const showImage = !!article.image && failedSrc !== article.image
 
   return (
     <div className="relative aspect-[16/10] overflow-hidden bg-graphite">
@@ -18,7 +21,7 @@ function Cover({ article }: { article: Article }) {
           src={article.image}
           alt=""
           loading="lazy"
-          onError={() => setFailed(true)}
+          onError={() => setFailedSrc(article.image)}
           className="size-full object-cover grayscale-[35%] transition-all duration-700 ease-out group-hover:scale-110 group-hover:rotate-1 group-hover:grayscale-0"
         />
       ) : (
