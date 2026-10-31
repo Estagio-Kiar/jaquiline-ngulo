@@ -11,7 +11,6 @@ import { Contact } from "@/components/sections/Contact"
 import { Hero } from "@/components/sections/Hero"
 import { Journey } from "@/components/sections/Journey"
 import { Pillars } from "@/components/sections/Pillars"
-import { Podcast } from "@/components/sections/Podcast"
 import { Press } from "@/components/sections/Press"
 import { Quotes } from "@/components/sections/Quotes"
 import { Stats } from "@/components/sections/Stats"
@@ -48,7 +47,6 @@ function Home() {
         <Quotes />
         <Press />
         <Articles />
-        <Podcast />
         <Agenda />
         <Contact />
       </main>

@@ -70,8 +70,8 @@ export function LoginPage() {
               O portfólio, sempre atualizado.
             </h2>
             <p className="mt-4 text-base/7 text-white/75">
-              Edite o perfil, o percurso, a imprensa, os artigos e o podcast —
-              as alterações aparecem no site de imediato.
+              Edite o perfil, o percurso, a imprensa, os artigos e a agenda — as
+              alterações aparecem no site de imediato.
             </p>
           </div>
         </div>

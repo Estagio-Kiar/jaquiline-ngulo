@@ -266,7 +266,6 @@ export function Dashboard() {
             { to: "/admin/perfil", label: "Editar perfil", icon: UserRound },
             { to: "/admin/imprensa", label: "Adicionar notícia", icon: Plus },
             { to: "/admin/artigos", label: "Escrever artigo", icon: Plus },
-            { to: "/admin/podcast", label: "Publicar episódio", icon: Plus },
             { to: "/admin/agenda", label: "Novo evento na agenda", icon: Plus },
             {
               to: "/admin/percurso",
