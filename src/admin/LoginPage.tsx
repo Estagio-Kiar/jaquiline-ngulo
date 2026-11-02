@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from "react"
 import { ArrowLeft, Eye, EyeOff, Lock, Mail } from "lucide-react"
 
-import { login, loginWithGoogle } from "@/admin/auth"
+import { login } from "@/admin/auth"
 import { ForgotPassword } from "@/admin/ForgotPassword"
-import { GOOGLE_CLIENT_ID, GoogleButton } from "@/admin/google"
+import { GOOGLE_CLIENT_ID } from "@/admin/google"
 import { Btn, Field, Input } from "@/admin/ui"
 import { person } from "@/data/profile"
+import { useGoogleLogin } from "@/hooks/useGoogleLogin"
 import { Link } from "@/lib/router"
 
 export function LoginPage() {
@@ -16,6 +17,11 @@ export function LoginPage() {
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
   const [forgot, setForgot] = useState(false)
+  const {
+    containerRef,
+    isLoading: googleLoading,
+    error: googleError,
+  } = useGoogleLogin()
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -27,18 +33,6 @@ export function LoginPage() {
     setLoading(true)
     try {
       await login(email, password)
-    } catch (err) {
-      setError((err as Error).message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const google = async (idToken: string) => {
-    setError("")
-    setLoading(true)
-    try {
-      await loginWithGoogle(idToken)
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -196,7 +190,7 @@ export function LoginPage() {
                 <Btn
                   type="submit"
                   size="lg"
-                  loading={loading}
+                  loading={loading || googleLoading}
                   className="mt-1 w-full"
                 >
                   Entrar no painel
@@ -210,7 +204,18 @@ export function LoginPage() {
                     ou
                     <span className="h-px flex-1 bg-ink/10" />
                   </div>
-                  <GoogleButton onCredential={google} />
+                  <div
+                    ref={containerRef}
+                    className="flex min-h-11 justify-center"
+                  />
+                  {googleError && (
+                    <p
+                      role="alert"
+                      className="mt-2 text-center text-xs text-lip"
+                    >
+                      {googleError}
+                    </p>
+                  )}
                   <p className="mt-3 text-center text-xs text-ink/45">
                     Só para contas Google já associadas a um utilizador do
                     painel.
