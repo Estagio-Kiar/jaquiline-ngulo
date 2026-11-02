@@ -66,7 +66,7 @@ export function useGoogleLogin() {
     async (response: { credential?: string }) => {
       const idToken = response?.credential
       if (!idToken) {
-        setError("Resposta inválida do Google")
+        setError("Resposta inválida do Google.")
         return
       }
       setIsLoading(true)
@@ -74,7 +74,7 @@ export function useGoogleLogin() {
       try {
         const data = await google(idToken)
         sessionStore.set(data)
-        navigate("/admin")
+        navigate("/admin" )
       } catch (e: unknown) {
         const msg =
           e instanceof Error ? e.message : "Falha ao entrar com Google"
