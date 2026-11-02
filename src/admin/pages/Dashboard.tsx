@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ArrowRight,
   ArrowUpRight,
@@ -6,6 +6,8 @@ import {
   Plus,
   UserRound,
 } from "lucide-react"
+import { driver } from "driver.js"
+import "driver.js/dist/driver.css"
 
 import { useSession } from "@/admin/auth"
 import { useAdminData, type DataKey } from "@/admin/data"
@@ -72,9 +74,13 @@ export function Dashboard() {
   const { state, reload } = useAdminData()
   const toast = useToast()
   const [importing, setImporting] = useState(false)
+  const tourRef = useRef<ReturnType<typeof driver> | null>(null)
 
   const loading = Object.values(state).some((s) => !s.loaded)
   const offline = !loading && Object.values(state).every((s) => s.error)
+  const tourKey = session?.user.id
+    ? `jn-dashboard-tour:${session.user.id}:v1`
+    : null
 
   const recent = useMemo(() => {
     const all = RESOURCES.flatMap((r) =>
@@ -122,20 +128,146 @@ export function Dashboard() {
 
   const firstName = session?.user.name?.split(" ")[0] ?? ""
 
+  const startDashboardTour = useCallback(() => {
+    const steps = [
+      {
+        element: '[data-tour="dashboard-welcome"]',
+        popover: {
+          title: "Bem-vindo ao painel",
+          description:
+            "Este é o ponto de partida para gerir o conteúdo do seu site.",
+          side: "bottom" as const,
+        },
+      },
+      ...(canImport
+        ? [
+            {
+              element: '[data-tour="dashboard-import"]',
+              popover: {
+                title: "Importe o conteúdo existente",
+                description:
+                  "Se as secções estiverem vazias, pode copiar para aqui o conteúdo que já aparece no site.",
+                side: "bottom" as const,
+              },
+            },
+          ]
+        : []),
+      {
+        element: '[data-tour="dashboard-resources"]',
+        popover: {
+          title: "Aceda às secções",
+          description:
+            "Os cartões mostram a quantidade de registos e abrem cada área para edição.",
+          side: "bottom" as const,
+        },
+      },
+      {
+        element: '[data-tour="dashboard-activity"]',
+        popover: {
+          title: "Acompanhe a atividade",
+          description:
+            "Aqui encontra os conteúdos alterados recentemente e pode abri-los diretamente.",
+          side: "top" as const,
+        },
+      },
+      {
+        element: '[data-tour="dashboard-actions"]',
+        popover: {
+          title: "Comece pelas ações rápidas",
+          description:
+            "Use estes atalhos para editar o perfil, adicionar notícias, artigos, eventos ou marcos do percurso.",
+          side: "left" as const,
+        },
+      },
+      {
+        element: '[data-tour="dashboard-site"]',
+        popover: {
+          title: "Veja o resultado no site",
+          description:
+            "Abra o site numa nova aba para conferir as alterações publicadas.",
+          side: "bottom" as const,
+        },
+      },
+    ]
+
+    tourRef.current?.destroy()
+    tourRef.current = driver({
+      showProgress: true,
+      allowClose: true,
+      smoothScroll: true,
+      skipMissingElement: true,
+      nextBtnText: "Seguinte",
+      prevBtnText: "Anterior",
+      doneBtnText: "Concluir",
+      closeBtnLabel: "Fechar",
+      steps,
+      onDestroyed: (_element, _step, { reason }) => {
+        if (
+          !tourKey ||
+          (reason !== "done" &&
+            reason !== "close" &&
+            reason !== "escape" &&
+            reason !== "overlay")
+        )
+          return
+
+        try {
+          localStorage.setItem(tourKey, "done")
+        } catch {
+          toast.error("Não foi possível guardar o estado do tutorial.")
+        }
+      },
+    })
+    tourRef.current.drive()
+  }, [canImport, toast, tourKey])
+
+  useEffect(() => {
+    if (loading || !tourKey) return
+
+    let seen: string | null
+    try {
+      seen = localStorage.getItem(tourKey)
+    } catch {
+      toast.error("Não foi possível verificar o estado do tutorial.")
+      return
+    }
+
+    if (seen === "done") return
+
+    const timer = window.setTimeout(startDashboardTour, 500)
+    return () => {
+      window.clearTimeout(timer)
+      tourRef.current?.destroy()
+      tourRef.current = null
+    }
+  }, [loading, startDashboardTour, toast, tourKey])
+
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader
-        eyebrow="Painel"
-        title={`${greeting()}${firstName ? `, ${firstName}` : ""}`}
-        description="Tudo o que é publicado no portfólio, num só lugar."
-        actions={
-          <a href="/" target="_blank" rel="noopener noreferrer">
-            <Btn variant="outline">
-              Ver site <ArrowUpRight />
-            </Btn>
-          </a>
-        }
-      />
+      <div data-tour="dashboard-welcome">
+        <PageHeader
+          eyebrow="Painel"
+          title={`${greeting()}${firstName ? `, ${firstName}` : ""}`}
+          description="Tudo o que é publicado no portfólio, num só lugar."
+          actions={
+            <>
+              <Btn variant="outline" onClick={startDashboardTour}>
+                Conhecer o painel
+              </Btn>
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-tour="dashboard-site"
+              >
+                <Btn variant="outline">
+                  Ver site <ArrowUpRight />
+                </Btn>
+              </a>
+            </>
+          }
+        />
+      </div>
 
       {offline && (
         <Card className="border-lip/20 bg-lip/5 p-5 text-sm text-ink">
@@ -148,36 +280,41 @@ export function Dashboard() {
       )}
 
       {canImport && (
-        <Card className="relative overflow-hidden bg-ink p-6 text-white sm:p-8">
-          <div className="absolute -top-20 -right-10 size-64 rounded-full bg-lip/40 blur-3xl" />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-xl">
-              <p className="font-heading text-[11px] font-semibold tracking-[0.25em] text-caramel uppercase">
-                Primeiros passos
-              </p>
-              <h2 className="mt-2 text-xl font-extrabold">
-                Importar o conteúdo atual do site
-              </h2>
-              <p className="mt-1.5 text-sm/6 text-white/70">
-                O perfil, o percurso, as competências e a imprensa que o site já
-                mostra são copiados para a API, para que os possa editar aqui.
-                Só são importadas as secções que ainda estão vazias.
-              </p>
+        <div data-tour="dashboard-import">
+          <Card className="relative overflow-hidden bg-ink p-6 text-white sm:p-8">
+            <div className="absolute -top-20 -right-10 size-64 rounded-full bg-lip/40 blur-3xl" />
+            <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="max-w-xl">
+                <p className="font-heading text-[11px] font-semibold tracking-[0.25em] text-caramel uppercase">
+                  Primeiros passos
+                </p>
+                <h2 className="mt-2 text-xl font-extrabold">
+                  Importar o conteúdo atual do site
+                </h2>
+                <p className="mt-1.5 text-sm/6 text-white/70">
+                  O perfil, o percurso, as competências e a imprensa que o site
+                  já mostra são copiados para a API, para que os possa editar
+                  aqui. Só são importadas as secções que ainda estão vazias.
+                </p>
+              </div>
+              <Btn
+                size="lg"
+                loading={importing}
+                onClick={runImport}
+                className="bg-white text-ink shadow-none hover:bg-lavender"
+              >
+                <CloudDownload /> Importar agora
+              </Btn>
             </div>
-            <Btn
-              size="lg"
-              loading={importing}
-              onClick={runImport}
-              className="bg-white text-ink shadow-none hover:bg-lavender"
-            >
-              <CloudDownload /> Importar agora
-            </Btn>
-          </div>
-        </Card>
+          </Card>
+        </div>
       )}
 
       {/* Contadores */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div
+        className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+        data-tour="dashboard-resources"
+      >
         {RESOURCES.map((r) => {
           const slot = state[r.key as DataKey]
           const Icon = r.icon
@@ -206,84 +343,88 @@ export function Dashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-heading text-sm font-bold text-ink">
-              Atividade recente
-            </h2>
-          </div>
-          {loading ? (
-            <div className="mt-5 flex flex-col gap-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-12" />
-              ))}
+        <div data-tour="dashboard-activity">
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="font-heading text-sm font-bold text-ink">
+                Atividade recente
+              </h2>
             </div>
-          ) : recent.length === 0 ? (
-            <p className="mt-5 text-sm text-ink/50">
-              Sem atividade ainda. Comece por criar conteúdo.
-            </p>
-          ) : (
-            <ul className="mt-4 divide-y divide-ink/8">
-              {recent.map((r) => {
-                const Icon = r.resource.icon
-                return (
-                  <li key={`${r.resource.path}-${r.id}`}>
-                    <Link
-                      to={
-                        r.resource.path
-                          ? `/admin/${r.resource.path}`
-                          : "/admin/perfil"
-                      }
-                      className="group flex items-center gap-3 py-3"
-                    >
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ink/[0.04] text-ink/60">
-                        <Icon className="size-4" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-ink group-hover:text-lip">
-                          {r.title}
-                        </p>
-                        <p className="text-xs text-ink/45">
-                          {r.resource.title}
-                        </p>
-                      </div>
-                      <span className="text-xs text-ink/40">
-                        {relative(r.updated)}
-                      </span>
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </Card>
+            {loading ? (
+              <div className="mt-5 flex flex-col gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12" />
+                ))}
+              </div>
+            ) : recent.length === 0 ? (
+              <p className="mt-5 text-sm text-ink/50">
+                Sem atividade ainda. Comece por criar conteúdo.
+              </p>
+            ) : (
+              <ul className="mt-4 divide-y divide-ink/8">
+                {recent.map((r) => {
+                  const Icon = r.resource.icon
+                  return (
+                    <li key={`${r.resource.path}-${r.id}`}>
+                      <Link
+                        to={
+                          r.resource.path
+                            ? `/admin/${r.resource.path}`
+                            : "/admin/perfil"
+                        }
+                        className="group flex items-center gap-3 py-3"
+                      >
+                        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ink/[0.04] text-ink/60">
+                          <Icon className="size-4" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-ink group-hover:text-lip">
+                            {r.title}
+                          </p>
+                          <p className="text-xs text-ink/45">
+                            {r.resource.title}
+                          </p>
+                        </div>
+                        <span className="text-xs text-ink/40">
+                          {relative(r.updated)}
+                        </span>
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </Card>
+        </div>
 
-        <Card className="flex flex-col gap-2 p-6">
-          <h2 className="mb-2 font-heading text-sm font-bold text-ink">
-            Ações rápidas
-          </h2>
-          {[
-            { to: "/admin/perfil", label: "Editar perfil", icon: UserRound },
-            { to: "/admin/imprensa", label: "Adicionar notícia", icon: Plus },
-            { to: "/admin/artigos", label: "Escrever artigo", icon: Plus },
-            { to: "/admin/agenda", label: "Novo evento na agenda", icon: Plus },
-            {
-              to: "/admin/percurso",
-              label: "Novo marco no percurso",
-              icon: Plus,
-            },
-          ].map((a) => (
-            <Link
-              key={a.to + a.label}
-              to={a.to}
-              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-ink/[0.04]"
-            >
-              <a.icon className="size-4 text-lip" />
-              <span className="flex-1">{a.label}</span>
-              <ArrowRight className="size-4 text-ink/30 transition-transform group-hover:translate-x-0.5 group-hover:text-ink" />
-            </Link>
-          ))}
-        </Card>
+        <div data-tour="dashboard-actions">
+          <Card className="flex flex-col gap-2 p-6">
+            <h2 className="mb-2 font-heading text-sm font-bold text-ink">
+              Ações rápidas
+            </h2>
+            {[
+              { to: "/admin/perfil", label: "Editar perfil", icon: UserRound },
+              { to: "/admin/imprensa", label: "Adicionar notícia", icon: Plus },
+              { to: "/admin/artigos", label: "Escrever artigo", icon: Plus },
+              { to: "/admin/agenda", label: "Novo evento na agenda", icon: Plus },
+              {
+                to: "/admin/percurso",
+                label: "Novo marco no percurso",
+                icon: Plus,
+              },
+            ].map((a) => (
+              <Link
+                key={a.to + a.label}
+                to={a.to}
+                className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-ink/[0.04]"
+              >
+                <a.icon className="size-4 text-lip" />
+                <span className="flex-1">{a.label}</span>
+                <ArrowRight className="size-4 text-ink/30 transition-transform group-hover:translate-x-0.5 group-hover:text-ink" />
+              </Link>
+            ))}
+          </Card>
+        </div>
       </div>
     </div>
   )
