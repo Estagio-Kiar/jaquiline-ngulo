@@ -16,6 +16,7 @@ import { Quotes } from "@/components/sections/Quotes"
 import { Stats } from "@/components/sections/Stats"
 import { SiteContentProvider } from "@/content/SiteContent"
 import { ArticlePage } from "@/pages/ArticlePage"
+import { LegalPage } from "@/pages/LegalPage"
 import { usePathname } from "@/lib/router"
 
 // O painel só é descarregado quando se visita /admin.
@@ -80,11 +81,19 @@ export function App() {
   }
 
   const article = path.match(/^\/artigos\/([^/]+)$/)
+  const legalPage =
+    path === "/privacidade" ? "privacy" : path === "/termos" ? "terms" : null
 
   return (
     <SiteContentProvider>
       <Header />
-      {article ? <ArticlePage id={article[1]} /> : <Home />}
+      {legalPage ? (
+        <LegalPage document={legalPage} />
+      ) : article ? (
+        <ArticlePage id={article[1]} />
+      ) : (
+        <Home />
+      )}
       <Footer />
     </SiteContentProvider>
   )
