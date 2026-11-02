@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useState } from "react"
 import {
   ArrowRight,
   ArrowUpRight,
@@ -6,11 +6,10 @@ import {
   Plus,
   UserRound,
 } from "lucide-react"
-import { driver } from "driver.js"
-import "driver.js/dist/driver.css"
 
 import { useSession } from "@/admin/auth"
 import { useAdminData, type DataKey } from "@/admin/data"
+import { DashboardOnboarding } from "@/admin/onboarding/DashboardOnboarding"
 import { RESOURCES } from "@/admin/resources"
 import { Btn, Card, PageHeader, Skeleton, useToast } from "@/admin/ui"
 import { about, journey, person, press, quotes } from "@/data/profile"
@@ -74,13 +73,9 @@ export function Dashboard() {
   const { state, reload } = useAdminData()
   const toast = useToast()
   const [importing, setImporting] = useState(false)
-  const tourRef = useRef<ReturnType<typeof driver> | null>(null)
 
   const loading = Object.values(state).some((s) => !s.loaded)
   const offline = !loading && Object.values(state).every((s) => s.error)
-  const tourKey = session?.user.id
-    ? `jn-dashboard-tour:${session.user.id}:v1`
-    : null
 
   const recent = useMemo(() => {
     const all = RESOURCES.flatMap((r) =>
@@ -128,120 +123,6 @@ export function Dashboard() {
 
   const firstName = session?.user.name?.split(" ")[0] ?? ""
 
-  const startDashboardTour = useCallback(() => {
-    const steps = [
-      {
-        element: '[data-tour="dashboard-welcome"]',
-        popover: {
-          title: "Bem-vindo ao painel",
-          description:
-            "Este é o ponto de partida para gerir o conteúdo do seu site.",
-          side: "bottom" as const,
-        },
-      },
-      ...(canImport
-        ? [
-            {
-              element: '[data-tour="dashboard-import"]',
-              popover: {
-                title: "Importe o conteúdo existente",
-                description:
-                  "Se as secções estiverem vazias, pode copiar para aqui o conteúdo que já aparece no site.",
-                side: "bottom" as const,
-              },
-            },
-          ]
-        : []),
-      {
-        element: '[data-tour="dashboard-resources"]',
-        popover: {
-          title: "Aceda às secções",
-          description:
-            "Os cartões mostram a quantidade de registos e abrem cada área para edição.",
-          side: "bottom" as const,
-        },
-      },
-      {
-        element: '[data-tour="dashboard-activity"]',
-        popover: {
-          title: "Acompanhe a atividade",
-          description:
-            "Aqui encontra os conteúdos alterados recentemente e pode abri-los diretamente.",
-          side: "top" as const,
-        },
-      },
-      {
-        element: '[data-tour="dashboard-actions"]',
-        popover: {
-          title: "Comece pelas ações rápidas",
-          description:
-            "Use estes atalhos para editar o perfil, adicionar notícias, artigos, eventos ou marcos do percurso.",
-          side: "left" as const,
-        },
-      },
-      {
-        element: '[data-tour="dashboard-site"]',
-        popover: {
-          title: "Veja o resultado no site",
-          description:
-            "Abra o site numa nova aba para conferir as alterações publicadas.",
-          side: "bottom" as const,
-        },
-      },
-    ]
-
-    tourRef.current?.destroy()
-    tourRef.current = driver({
-      showProgress: true,
-      allowClose: true,
-      smoothScroll: true,
-      skipMissingElement: true,
-      nextBtnText: "Seguinte",
-      prevBtnText: "Anterior",
-      doneBtnText: "Concluir",
-      closeBtnLabel: "Fechar",
-      steps,
-      onDestroyed: (_element, _step, { reason }) => {
-        if (
-          !tourKey ||
-          (reason !== "done" &&
-            reason !== "close" &&
-            reason !== "escape" &&
-            reason !== "overlay")
-        )
-          return
-
-        try {
-          localStorage.setItem(tourKey, "done")
-        } catch {
-          toast.error("Não foi possível guardar o estado do tutorial.")
-        }
-      },
-    })
-    tourRef.current.drive()
-  }, [canImport, toast, tourKey])
-
-  useEffect(() => {
-    if (loading || !tourKey) return
-
-    let seen: string | null
-    try {
-      seen = localStorage.getItem(tourKey)
-    } catch {
-      toast.error("Não foi possível verificar o estado do tutorial.")
-      return
-    }
-
-    if (seen === "done") return
-
-    const timer = window.setTimeout(startDashboardTour, 500)
-    return () => {
-      window.clearTimeout(timer)
-      tourRef.current?.destroy()
-      tourRef.current = null
-    }
-  }, [loading, startDashboardTour, toast, tourKey])
-
   return (
     <div className="flex flex-col gap-8">
       <div data-tour="dashboard-welcome">
@@ -251,9 +132,12 @@ export function Dashboard() {
           description="Tudo o que é publicado no portfólio, num só lugar."
           actions={
             <>
-              <Btn variant="outline" onClick={startDashboardTour}>
-                Conhecer o painel
-              </Btn>
+              {session?.user.id && (
+                <DashboardOnboarding
+                  userId={session.user.id}
+                  ready={!loading}
+                />
+              )}
               <a
                 href="/"
                 target="_blank"
