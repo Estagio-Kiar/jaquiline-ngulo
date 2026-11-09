@@ -246,7 +246,7 @@ export const api = {
   auth: {
     /** Indica se já existe um administrador configurado na API. */
     adminExists: (signal?: AbortSignal) =>
-      request<boolean>("/admin/users/setup", { signal }),
+      request<boolean>("/auth/admin-exists", { signal }),
     /** Cria o primeiro administrador, quando a API ainda não tem nenhum. */
     setupAdmin: (data: { nome: string; email: string; password: string }) =>
       request<unknown>("/auth/admin/setup", {
