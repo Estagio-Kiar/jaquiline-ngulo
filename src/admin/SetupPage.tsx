@@ -116,17 +116,16 @@ export function SetupPage() {
             </Link>
           </div>
         ) : adminExists ? (
-          <div className="mt-8">
-            <p className="rounded-xl bg-ink/[0.04] px-4 py-3 text-sm text-ink/70">
-              Já existe um administrador configurado. A criação inicial está
-              encerrada.
+          <div className="mt-8 text-center">
+            <p className="text-sm font-semibold tracking-widest text-ink/45">
+              ERRO 404
             </p>
-            <Link
-              to="/admin"
-              className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-xl bg-ink px-6 text-sm font-medium text-white transition-colors hover:bg-graphite"
-            >
-              Iniciar sessão
-            </Link>
+            <h2 className="mt-2 text-xl font-bold text-ink">
+              Página não encontrada
+            </h2>
+            <p className="mt-2 text-sm/6 text-ink/55">
+              A página que procura não existe.
+            </p>
           </div>
         ) : (
           <form onSubmit={submit} className="mt-8 flex flex-col gap-5" noValidate>
