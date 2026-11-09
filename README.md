@@ -31,7 +31,7 @@ O site consome a API de `jaquiline-ngulo-server` e tem um painel em **`/admin`**
 1. Copie `.env.example` para `.env` e ajuste `VITE_API_URL` (por omissão `http://localhost:3333`).
 2. Na API, garanta que `FRONT_URL` inclui a origem do front
    (ex.: `FRONT_URL="http://localhost:3000,http://localhost:5173"`).
-3. Crie um utilizador admin na API (`POST /auth/sing_up`) e entre em `http://localhost:5173/admin`.
+3. Abra `http://localhost:5173/setup`. A página verifica `GET /admin/users/setup` e, se ainda não existir um administrador, cria-o com `POST /auth/admin/setup`.
 
 ### Como funciona
 
@@ -41,6 +41,7 @@ O site consome a API de `jaquiline-ngulo-server` e tem um painel em **`/admin`**
 - **Painel `/admin`**: login com e-mail/palavra-passe (JWT + refresh automático), dashboard com
   contadores e atividade, edição do perfil com pré-visualização e CRUD de Percurso, Imprensa,
   Artigos, Categorias, Podcast e Redes, com upload de capas (arrastar e largar).
+- **Configuração `/setup`**: permite criar o primeiro administrador apenas enquanto a API indica que ainda não existe nenhum.
   No primeiro acesso, o botão **Importar agora** copia o conteúdo atual do site para a API.
 - Só utilizadores com role `admin` podem remover registos (o botão fica oculto para editores).
 - **Competências** (`/skills`): editáveis no painel, com percentagem opcional; no site aparecem em «Sobre» (barras quando há percentagem).
