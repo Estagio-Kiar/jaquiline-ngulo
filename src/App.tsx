@@ -17,7 +17,7 @@ import { Stats } from "@/components/sections/Stats"
 import { SiteContentProvider } from "@/content/SiteContent"
 import { ArticlePage } from "@/pages/ArticlePage"
 import { LegalPage } from "@/pages/LegalPage"
-import { usePathname } from "@/lib/router"
+import { Redirect, usePathname } from "@/lib/router"
 
 // O painel só é descarregado quando se visita /admin.
 const AdminApp = lazy(() => import("@/admin/AdminApp"))
@@ -96,6 +96,8 @@ export function App() {
   const article = path.match(/^\/artigos\/([^/]+)$/)
   const legalPage =
     path === "/privacidade" ? "privacy" : path === "/termos" ? "terms" : null
+
+  if (!legalPage && !article && path !== "/") return <Redirect to="/" />
 
   return (
     <SiteContentProvider>

@@ -11,7 +11,7 @@ import { ResourcePage } from "@/admin/pages/ResourcePage"
 import { findResource } from "@/admin/resources"
 import { TutorialPage } from "@/admin/tutorial/TutorialPage"
 import { ToastProvider } from "@/admin/ui"
-import { usePathname } from "@/lib/router"
+import { Redirect, usePathname } from "@/lib/router"
 
 function Routes() {
   const path = usePathname()
@@ -22,7 +22,7 @@ function Routes() {
   if (segment === "tutorial") return <TutorialPage />
   const resource = findResource(segment)
   if (resource) return <ResourcePage key={resource.key} config={resource} />
-  return <Dashboard />
+  return segment ? <Redirect to="/" /> : <Dashboard />
 }
 
 export default function AdminApp() {

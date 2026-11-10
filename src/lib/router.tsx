@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useSyncExternalStore,
   type AnchorHTMLAttributes,
   type MouseEvent,
@@ -19,6 +20,11 @@ export function navigate(to: string, { replace = false } = {}) {
   const hash = to.split("#")[1]
   if (!hash) window.scrollTo({ top: 0 })
   else setTimeout(() => document.getElementById(hash)?.scrollIntoView(), 60)
+}
+
+export function Redirect({ to }: { to: string }) {
+  useEffect(() => navigate(to, { replace: true }), [to])
+  return null
 }
 
 export function usePathname() {

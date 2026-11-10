@@ -3,7 +3,7 @@ import { ArrowLeft, KeyRound, ShieldCheck, UserRound } from "lucide-react"
 
 import { Btn, Field, Input } from "@/admin/ui"
 import { api } from "@/lib/api"
-import { Link } from "@/lib/router"
+import { Link, Redirect } from "@/lib/router"
 
 const MIN_PASSWORD = 12
 
@@ -108,17 +108,7 @@ export function SetupPage() {
             </Link>
           </div>
         ) : adminExists ? (
-          <div className="mt-8 text-center">
-            <p className="text-sm font-semibold tracking-widest text-ink/45">
-              ERRO 404
-            </p>
-            <h2 className="mt-2 text-xl font-bold text-ink">
-              Página não encontrada
-            </h2>
-            <p className="mt-2 text-sm/6 text-ink/55">
-              A página que procura não existe.
-            </p>
-          </div>
+          <Redirect to="/" />
         ) : (
           
           <form onSubmit={submit} className="mt-8 flex flex-col gap-5" noValidate>
