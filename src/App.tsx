@@ -22,11 +22,6 @@ import { Redirect, usePathname } from "@/lib/router"
 // O painel só é descarregado quando se visita /admin.
 const AdminApp = lazy(() => import("@/admin/AdminApp"))
 const ConfirmEmailPage = lazy(() => import("@/admin/ConfirmEmailPage"))
-const SetupPage = lazy(() =>
-  import("@/admin/SetupPage").then((module) => ({
-    default: module.SetupPage,
-  }))
-)
 
 function Home() {
   // Ao chegar de outra página com "/#secção", desloca até à secção.
@@ -71,13 +66,6 @@ export function App() {
     )
   }
 
-  if (path === "/setup") {
-    return (
-      <Suspense fallback={null}>
-        <SetupPage />
-      </Suspense>
-    )
-  }
 
   if (path === "/admin" || path.startsWith("/admin/")) {
     return (

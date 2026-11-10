@@ -41,7 +41,6 @@ O site consome a API de `jaquiline-ngulo-server` e tem um painel em **`/admin`**
 - **Painel `/admin`**: login com e-mail/palavra-passe (JWT + refresh automático), dashboard com
   contadores e atividade, edição do perfil com pré-visualização e CRUD de Percurso, Imprensa,
   Artigos, Categorias, Podcast e Redes, com upload de capas (arrastar e largar).
-- **Configuração `/setup`**: permite criar o primeiro administrador apenas enquanto a API indica que ainda não existe nenhum.
   No primeiro acesso, o botão **Importar agora** copia o conteúdo atual do site para a API.
 - Só utilizadores com role `admin` podem remover registos (o botão fica oculto para editores).
 - **Competências** (`/skills`): editáveis no painel, com percentagem opcional; no site aparecem em «Sobre» (barras quando há percentagem).

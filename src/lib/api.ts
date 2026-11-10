@@ -244,15 +244,6 @@ function resource<T, P = Partial<T>>(base: string) {
 
 export const api = {
   auth: {
-    /** Indica se já existe um administrador configurado na API. */
-    adminExists: (signal?: AbortSignal) =>
-      request<boolean>("/auth/admin-exists", { signal }),
-    /** Cria o primeiro administrador, quando a API ainda não tem nenhum. */
-    setupAdmin: (data: { nome: string; email: string; password: string }) =>
-      request<unknown>("/auth/admin/setup", {
-        method: "POST",
-        body: data,
-      }),
     signIn: (email: string, password: string) =>
       request<AuthResponse>("/auth/sing_in", {
         method: "POST",
