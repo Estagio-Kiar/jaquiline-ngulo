@@ -80,19 +80,11 @@ export function SetupPage() {
           <ArrowLeft className="size-4" /> Voltar ao site
         </Link>
 
-        <div className="mt-8 grid size-14 place-items-center rounded-2xl bg-ink text-white">
-          <ShieldCheck className="size-6" />
-        </div>
-        <h1 className="mt-5 text-2xl font-extrabold text-ink">
-          Configuração inicial
-        </h1>
-        <p className="mt-2 text-sm/6 text-ink/55">
-          Crie a conta de administrador para gerir o painel da Jaqueline Ngulo.
-        </p>
+        
 
         {checking ? (
           <p className="mt-8 text-sm text-ink/60" role="status">
-            A verificar a configuração da API…
+            Processando a rota…
           </p>
         ) : error && adminExists === null ? (
           <div className="mt-8">
@@ -128,7 +120,17 @@ export function SetupPage() {
             </p>
           </div>
         ) : (
+          
           <form onSubmit={submit} className="mt-8 flex flex-col gap-5" noValidate>
+            <div className="mt-8 grid size-14 place-items-center rounded-2xl bg-ink text-white">
+          <ShieldCheck className="size-6" />
+        </div>
+        <h1 className="mt-5 text-2xl font-extrabold text-ink">
+          Configuração inicial
+        </h1>
+        <p className="mt-2 text-sm/6 text-ink/55">
+          Crie a conta de administrador para gerir o painel da Jaqueline Ngulo.
+        </p>
             <Field label="Nome" htmlFor="setup-name" required>
               <div className="relative">
                 <UserRound className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-ink/35" />
