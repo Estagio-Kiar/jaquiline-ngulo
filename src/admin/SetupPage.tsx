@@ -70,6 +70,8 @@ export function SetupPage() {
     }
   }
 
+  if (checking) return null
+
   return (
     <main className="grid min-h-svh place-items-center bg-[#f7f7f9] px-5 py-10">
       <section className="w-full max-w-md rounded-3xl border border-ink/8 bg-white p-7 shadow-xl shadow-ink/5 sm:p-9">
@@ -80,13 +82,7 @@ export function SetupPage() {
           <ArrowLeft className="size-4" /> Voltar ao site
         </Link>
 
-        
-
-        {checking ? (
-          <p className="mt-8 text-sm text-ink/60" role="status">
-            Processando a rota…
-          </p>
-        ) : error && adminExists === null ? (
+        {error && adminExists === null ? (
           <div className="mt-8">
             <p role="alert" className="rounded-xl bg-lip/10 px-4 py-3 text-sm text-lip">
               {error}
@@ -110,7 +106,6 @@ export function SetupPage() {
         ) : adminExists ? (
           <Redirect to="/" />
         ) : (
-          
           <form onSubmit={submit} className="mt-8 flex flex-col gap-5" noValidate>
             <div className="mt-8 grid size-14 place-items-center rounded-2xl bg-ink text-white">
           <ShieldCheck className="size-6" />
