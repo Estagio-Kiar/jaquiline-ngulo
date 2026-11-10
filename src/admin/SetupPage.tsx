@@ -73,7 +73,7 @@ export function SetupPage() {
   if (checking) return null
 
   return (
-    <main className="grid min-h-svh place-items-center bg-[#f7f7f9] px-5 py-10">
+    <main className={adminExists?"hidden":"grid min-h-svh place-items-center bg-[#f7f7f9] px-5 py-10"}>
       <section className="w-full max-w-md rounded-3xl border border-ink/8 bg-white p-7 shadow-xl shadow-ink/5 sm:p-9">
         <Link
           to="/"
