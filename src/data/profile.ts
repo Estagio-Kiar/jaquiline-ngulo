@@ -11,8 +11,8 @@ export const person = {
   tagline: "Tecnologia, inclusão e cultura ao serviço das mulheres angolanas",
   heroText:
     "Dirige a Women in Tech Angola, fundou a VEUMA e escreve para preservar a sabedoria de gerações. A tecnologia, defende, não tem género.",
-  photo: "/jaquiline-hero-768.png",
-  photoSmall: "/jaquiline-hero-384.png",
+  photo: "/jaqueline-hero-768.png",
+  photoSmall: "/jaqueline-hero-384.png",
 }
 
 /**
@@ -22,7 +22,7 @@ export const person = {
  * Se um ficheiro faltar, usa-se a fotografia de estúdio.
  */
 export const gallery = [
-  { src: "/jaquiline-hero-768.png", position: "50% 25%" },
+  { src: "/jaqueline-hero-768.png", position: "50% 25%" },
   { src: "/fotos/pti-blazer-vermelho.avif", position: "50% 30%" },
   { src: "/fotos/bantumen-exterior-1.jpg", position: "50% 25%" },
   { src: "/fotos/chocolate-premio-1.png", position: "50% 20%" },
@@ -163,14 +163,14 @@ export const press = [
   {
     outlet: "allAfrica / ANGOP",
     date: "Abr 2026",
-    title: "L'Angolaise Jaquelina Ngulo honorée au Nigéria",
+    title: "L'Angolaise Jaqueline Ngulo honorée au Nigéria",
     url: "https://fr.allafrica.com/stories/202604170384.html",
   },
   {
     outlet: "Chocolate",
     image: "/fotos/artigos/chocolate.png",
     date: "Abr 2026",
-    title: "Jaquelina Mabiala Ngulo entre as 100 personalidades mais influentes de África em 2026",
+    title: "Jaqueline Mabiala Ngulo entre as 100 personalidades mais influentes de África em 2026",
     url: "https://chocolate.co.ao/sociedade/jaquelina-mabiala-ngulo-entre-as-100-personalidades-mais-influentes-de-africa-em-2026/",
   },
   {
