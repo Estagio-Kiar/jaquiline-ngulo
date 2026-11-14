@@ -12,8 +12,10 @@ import type {
   Skill,
   SocialLink,
   UploadFolder,
+  AssignableRole,
+  OnboardingProgress,
+  OnboardingTour,
   UploadResponse,
-  UserRole,
 } from "@/lib/types"
 
 /** URL base da API. Defina `VITE_API_URL` no `.env` do front. */
@@ -130,6 +132,17 @@ const AUTH_MESSAGES: Record<string, string> = {
     "Para alterar a sua própria palavra-passe use «Esqueci-me da palavra-passe» no login.",
   "User not found": "Utilizador não encontrado.",
   "Agenda event not found": "Evento não encontrado.",
+  "Only administrators": "Esta ação é reservada a administradores.",
+  "You cannot edit content": "A sua função não permite editar conteúdos.",
+  "Only managers and administrators can delete content":
+    "Só gestores e administradores podem remover conteúdos.",
+  "The administrator role cannot be changed":
+    "A função de administrador não pode ser alterada.",
+  "Dont can create user role admin":
+    "Não é possível criar outro administrador pelo painel.",
+  "Onboarding tour not found": "Tour do painel não encontrado.",
+  "Onboarding tour has not been started": "O tour ainda não foi iniciado.",
+  "Onboarding tour is no longer in progress": "O tour já foi concluído.",
 }
 
 async function toError(res: Response) {
@@ -250,19 +263,20 @@ export const api = {
         body: { email, password },
       }),
     /**
-     * Cria um utilizador do painel. A API envia um link de confirmação por
-     * e-mail e a conta só fica ativa depois de confirmada. Se o e-mail já
-     * existir, a API apenas reenvia o link.
+     * Cria um utilizador do painel (só administradores). A API envia um link
+     * de confirmação por e-mail e a conta só fica ativa depois de confirmada.
+     * Se o e-mail já existir, a API apenas reenvia o link.
      */
     signUp: (data: {
       nome: string
       email: string
       password: string
-      role: UserRole
+      role: AssignableRole
     }) =>
       request<{ message: string }>("/auth/sing_up", {
         method: "POST",
         body: data,
+        auth: true,
       }),
     /** Ativa a conta com o token recebido no link do e-mail. */
     confirmEmail: (token: string) =>
@@ -316,6 +330,47 @@ export const api = {
       request<{ message: string }>(`/admin/users/${id}/password`, {
         method: "PATCH",
         body: { newPassword },
+        auth: true,
+      }),
+    /** Muda a função de um utilizador (a de administrador não pode mudar). */
+    setRole: (id: string, role: AssignableRole) =>
+      request<{ message: string }>(`/admin/users/${id}/role`, {
+        method: "PATCH",
+        body: { role },
+        auth: true,
+      }),
+  },
+  /** Tours guiados do painel e progresso de cada utilizador. */
+  onboarding: {
+    status: () =>
+      request<{ progress: OnboardingProgress[] }>("/onboarding/status", {
+        auth: true,
+      }),
+    tours: () => request<OnboardingTour[]>("/onboarding/tours", { auth: true }),
+    tour: (tourId: string) =>
+      request<OnboardingTour>(`/onboarding/tours/${tourId}`, { auth: true }),
+    start: (tourId: string) =>
+      request<OnboardingProgress>("/onboarding/start", {
+        method: "POST",
+        body: { tourId },
+        auth: true,
+      }),
+    progress: (tourId: string, currentStepKey: string) =>
+      request<OnboardingProgress>("/onboarding/progress", {
+        method: "PATCH",
+        body: { tourId, currentStepKey },
+        auth: true,
+      }),
+    complete: (tourId: string) =>
+      request<OnboardingProgress>("/onboarding/complete", {
+        method: "POST",
+        body: { tourId },
+        auth: true,
+      }),
+    dismiss: (tourId: string) =>
+      request<OnboardingProgress>("/onboarding/dismiss", {
+        method: "POST",
+        body: { tourId },
         auth: true,
       }),
   },

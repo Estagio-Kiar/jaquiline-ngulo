@@ -110,7 +110,6 @@ const ALL_TOPICS: Topic[] = [
     icon: UserRound,
     group: "Conteúdos",
     route: "/admin/perfil",
-    adminOnly: true,
     steps: [
       {
         title: "Abra «Perfil» no menu",
@@ -143,7 +142,6 @@ const ALL_TOPICS: Topic[] = [
     icon: ImagePlus,
     group: "Imagens",
     route: "/admin/perfil",
-    adminOnly: true,
     steps: [
       {
         title: "Abra «Perfil» e desça até «Fotografias»",
@@ -192,7 +190,7 @@ const ALL_TOPICS: Topic[] = [
       },
       {
         title: "Edite ou remova",
-        text: "Clique num marco (ou no lápis) para editar. O caixote do lixo remove — só administradores o veem, e há sempre confirmação.",
+        text: "Clique num marco (ou no lápis) para editar. O caixote do lixo remove — só gestores e administradores o veem, e há sempre confirmação.",
       },
     ],
   },
@@ -227,11 +225,10 @@ const ALL_TOPICS: Topic[] = [
     group: "Conteúdos",
     route: "/admin/agenda",
     resource: "agenda",
-    adminOnly: true,
     steps: [
       {
         title: "Abra «Agenda» e clique em «Adicionar evento»",
-        text: "Só administradores podem criar ou alterar eventos; os outros perfis veem a lista.",
+        text: "Todas as funções podem criar e alterar eventos; remover é só para gestores e administradores.",
       },
       {
         title: "Preencha os dados obrigatórios",
@@ -409,11 +406,15 @@ const ALL_TOPICS: Topic[] = [
       {
         title: "Convide alguém (administradores)",
         text: "Em «Adicionar utilizador», preencha nome, e-mail, palavra-passe (mínimo 12 caracteres) e função. Clique em «Criar e enviar convite».",
-        tip: "A API permite uma conta por função (Administrador, Editor, Utilizador): só aparecem as funções livres.",
+        tip: "Pode escolher Gestor, Editor ou Utilizador. A conta de administrador é criada pela própria API no arranque.",
       },
       {
         title: "A pessoa confirma o e-mail",
         text: "Ela recebe um link (válido 30 minutos). Até confirmar, aparece na lista como «Por confirmar». Se o link expirar, clique em «Reenviar».",
+      },
+      {
+        title: "Mude a função de alguém (administradores)",
+        text: "Na lista da equipa, escolha a nova função no seletor ao lado do nome (Gestor, Editor ou Utilizador). A função de administrador não pode ser alterada.",
       },
       {
         title: "Defina a palavra-passe de outra pessoa",
@@ -434,11 +435,15 @@ const ALL_TOPICS: Topic[] = [
     steps: [
       {
         title: "Administrador",
-        text: "Faz tudo: edita o perfil e as fotos, gere a agenda e a equipa, cria, edita e remove qualquer conteúdo.",
+        text: "Faz tudo: cria, edita e remove conteúdos e gere a equipa (convites, funções e palavras-passe). É criado pela API no primeiro arranque.",
+      },
+      {
+        title: "Gestor",
+        text: "Cria, edita e remove conteúdos (perfil, fotos, agenda, percurso, imprensa, artigos…), mas não gere a equipa.",
       },
       {
         title: "Editor e Utilizador",
-        text: "Criam e editam conteúdos (percurso, competências, imprensa, artigos…), mas não removem registos, não alteram o perfil nem a agenda e não gerem a equipa.",
+        text: "Criam e editam todos os conteúdos, incluindo o perfil e a agenda, mas não removem registos nem gerem a equipa.",
       },
       {
         title: "Conta ativa",
@@ -484,8 +489,8 @@ const ALL_TOPICS: Topic[] = [
         text: "Confirme o e-mail pelo link recebido. Se expirou, peça a um administrador para o reenviar.",
       },
       {
-        title: "«Esta ação é reservada a administradores»",
-        text: "A sua função não permite essa ação (ex.: remover registos ou alterar a agenda). Peça a um administrador.",
+        title: "«Só gestores e administradores podem remover conteúdos»",
+        text: "A sua função permite criar e editar, mas não remover. Peça a um gestor ou administrador.",
       },
       {
         title: "A imagem não carrega",

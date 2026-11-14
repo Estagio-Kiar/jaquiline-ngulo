@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react"
 
-import { isAdmin, logout, useSession } from "@/admin/auth"
+import { logout, roleLabel, useSession } from "@/admin/auth"
 import { useAdminData, type DataKey } from "@/admin/data"
 import { RESOURCES } from "@/admin/resources"
 import { HelpButton } from "@/admin/tutorial/HelpButton"
@@ -168,7 +168,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               {user?.name || "Utilizador"}
             </p>
             <p className="truncate text-[11px] text-white/45">
-              {isAdmin(user?.role) ? "Administrador" : "Editor"} · {user?.email}
+              {roleLabel(user?.role)} · {user?.email}
             </p>
           </div>
           <button

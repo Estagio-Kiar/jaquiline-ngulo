@@ -10,7 +10,7 @@ import {
   UsersRound,
 } from "lucide-react"
 
-import { isAdmin, patchSessionUser, useSession } from "@/admin/auth"
+import { isAdmin, patchSessionUser, roleLabel, useSession } from "@/admin/auth"
 import { GOOGLE_CLIENT_ID, GoogleButton } from "@/admin/google"
 import {
   Badge,
@@ -26,26 +26,23 @@ import {
 } from "@/admin/ui"
 import { api } from "@/lib/api"
 import { relative } from "@/lib/format"
-import type { PanelUser, UserRole } from "@/lib/types"
+import type { AssignableRole, PanelUser, UserRole } from "@/lib/types"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASSWORD = 12
 
-const ROLE_LABEL: Record<string, string> = {
-  admin: "Administrador",
-  administrador: "Administrador",
-  editor: "Editor",
-  user: "Utilizador",
-}
-
 const ROLE_HINT: Record<UserRole, string> = {
-  admin:
-    "Acesso total: cria, edita e remove conteúdos, gere a agenda e a equipa.",
-  editor: "Cria e edita conteúdos, mas não remove nem gere a agenda.",
-  user: "Cria e edita conteúdos, mas não remove nem gere a agenda.",
+  admin: "Acesso total: conteúdos e gestão da equipa.",
+  manager: "Cria, edita e remove conteúdos. Não gere a equipa.",
+  editor: "Cria e edita conteúdos, mas não os remove.",
+  user: "Cria e edita conteúdos, mas não os remove.",
 }
 
-const ROLES: UserRole[] = ["admin", "editor", "user"]
+/** Funções que um administrador pode atribuir (o administrador é criado pela API). */
+const ROLES: AssignableRole[] = ["manager", "editor", "user"]
+
+const asAssignable = (role: string): AssignableRole =>
+  ROLES.includes(role as AssignableRole) ? (role as AssignableRole) : "user"
 
 const initialsOf = (text: string) =>
   text
@@ -90,7 +87,7 @@ function MyAccount() {
           <p className="truncate text-sm text-ink/55">{user.email}</p>
           <div className="mt-1.5">
             <Badge tone={isAdmin(user.role) ? "lip" : "neutral"}>
-              {ROLE_LABEL[user.role] ?? user.role}
+              {roleLabel(user.role)}
             </Badge>
           </div>
         </div>
@@ -251,6 +248,25 @@ function Team({
   const toast = useToast()
   const [target, setTarget] = useState<PanelUser | null>(null)
   const [resending, setResending] = useState("")
+  const [changingRole, setChangingRole] = useState("")
+
+  const changeRole = async (user: PanelUser, role: AssignableRole) => {
+    if (role === user.role) return
+    setChangingRole(user.id)
+    try {
+      const res = await api.users.setRole(user.id, role)
+      toast.success(
+        res.message
+          ? `Função de ${user.name || user.email}: ${roleLabel(role)}.`
+          : "Função atualizada."
+      )
+      reload()
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setChangingRole("")
+    }
+  }
 
   const resend = async (user: PanelUser) => {
     setResending(user.id)
@@ -261,9 +277,7 @@ function Team({
         nome: user.name || user.email,
         email: user.email,
         password: crypto.randomUUID(),
-        role: (ROLES.includes(user.role as UserRole)
-          ? user.role
-          : "user") as UserRole,
+        role: asAssignable(user.role),
       })
       toast.success(res.message || `Confirmação reenviada para ${user.email}.`)
     } catch (e) {
@@ -324,9 +338,27 @@ function Team({
                   </p>
                   <p className="truncate text-xs text-ink/55">{u.email}</p>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                    <Badge tone={isAdmin(u.role) ? "lip" : "neutral"}>
-                      {ROLE_LABEL[u.role] ?? u.role}
-                    </Badge>
+                    {!me && !isAdmin(u.role) ? (
+                      <Select
+                        aria-label={`Função de ${u.name || u.email}`}
+                        value={asAssignable(u.role)}
+                        disabled={changingRole === u.id}
+                        onChange={(e) =>
+                          changeRole(u, e.target.value as AssignableRole)
+                        }
+                        className="h-7 w-auto rounded-full py-0 pr-8 pl-3 text-xs"
+                      >
+                        {ROLES.map((r) => (
+                          <option key={r} value={r}>
+                            {roleLabel(r)}
+                          </option>
+                        ))}
+                      </Select>
+                    ) : (
+                      <Badge tone={isAdmin(u.role) ? "lip" : "neutral"}>
+                        {roleLabel(u.role)}
+                      </Badge>
+                    )}
                     {u.active ? (
                       <Badge tone="green">Ativa</Badge>
                     ) : (
@@ -382,32 +414,23 @@ type NewUser = {
   email: string
   password: string
   confirm: string
-  role: UserRole | ""
+  role: AssignableRole
 }
 
-function NewUserForm({
-  takenRoles,
-  onCreated,
-}: {
-  takenRoles: string[]
-  onCreated: () => void
-}) {
+function NewUserForm({ onCreated }: { onCreated: () => void }) {
   const toast = useToast()
-  // A API só permite um utilizador por função (role única).
-  const available = ROLES.filter((r) => !takenRoles.includes(r))
   const [v, setV] = useState<NewUser>({
     nome: "",
     email: "",
     password: "",
     confirm: "",
-    role: available[0] ?? "",
+    role: "editor",
   })
   const [errors, setErrors] = useState<Partial<Record<keyof NewUser, string>>>(
     {}
   )
   const [saving, setSaving] = useState(false)
-  const role =
-    v.role && available.includes(v.role) ? v.role : (available[0] ?? "")
+  const role = v.role
 
   const set = (k: keyof NewUser) => (e: { target: { value: string } }) => {
     setV((s) => ({ ...s, [k]: e.target.value }))
@@ -424,7 +447,7 @@ function NewUserForm({
     if (v.confirm !== v.password)
       errs.confirm = "As palavras-passe não coincidem."
     setErrors(errs)
-    if (Object.keys(errs).length || !role) return
+    if (Object.keys(errs).length) return
 
     setSaving(true)
     try {
@@ -437,7 +460,7 @@ function NewUserForm({
       toast.success(
         res.message || `Enviámos um link de confirmação para ${v.email.trim()}.`
       )
-      setV({ nome: "", email: "", password: "", confirm: "", role: "" })
+      setV({ nome: "", email: "", password: "", confirm: "", role: "editor" })
       onCreated()
     } catch (err) {
       toast.error((err as Error).message)
@@ -462,84 +485,76 @@ function NewUserForm({
         </div>
       </div>
 
-      {available.length === 0 ? (
-        <p className="mt-6 flex items-start gap-2 rounded-2xl bg-ink/[0.03] p-4 text-sm text-ink/65">
-          <Info className="mt-0.5 size-4 shrink-0" />
-          Todas as funções (administrador, editor e utilizador) já estão
-          atribuídas. A API permite apenas uma conta por função.
-        </p>
-      ) : (
-        <form
-          onSubmit={submit}
-          className="mt-6 grid gap-5 sm:grid-cols-2"
-          noValidate
+      <form
+        onSubmit={submit}
+        className="mt-6 grid gap-5 sm:grid-cols-2"
+        noValidate
+      >
+        <Field label="Nome" required error={errors.nome} htmlFor="u-nome">
+          <Input id="u-nome" value={v.nome} onChange={set("nome")} />
+        </Field>
+        <Field label="E-mail" required error={errors.email} htmlFor="u-email">
+          <Input
+            id="u-email"
+            type="email"
+            autoComplete="off"
+            value={v.email}
+            onChange={set("email")}
+          />
+        </Field>
+        <Field
+          label="Palavra-passe"
+          required
+          error={errors.password}
+          hint={`Mínimo ${MIN_PASSWORD} caracteres.`}
+          htmlFor="u-pass"
         >
-          <Field label="Nome" required error={errors.nome} htmlFor="u-nome">
-            <Input id="u-nome" value={v.nome} onChange={set("nome")} />
-          </Field>
-          <Field label="E-mail" required error={errors.email} htmlFor="u-email">
-            <Input
-              id="u-email"
-              type="email"
-              autoComplete="off"
-              value={v.email}
-              onChange={set("email")}
-            />
-          </Field>
-          <Field
-            label="Palavra-passe"
-            required
-            error={errors.password}
-            hint={`Mínimo ${MIN_PASSWORD} caracteres.`}
-            htmlFor="u-pass"
-          >
-            <Input
-              id="u-pass"
-              type="password"
-              autoComplete="new-password"
-              value={v.password}
-              onChange={set("password")}
-            />
-          </Field>
-          <Field
-            label="Confirmar palavra-passe"
-            required
-            error={errors.confirm}
-            htmlFor="u-confirm"
-          >
-            <Input
-              id="u-confirm"
-              type="password"
-              autoComplete="new-password"
-              value={v.confirm}
-              onChange={set("confirm")}
-            />
-          </Field>
-          <Field
-            label="Função"
-            htmlFor="u-role"
-            className="sm:col-span-2"
-            hint={role ? ROLE_HINT[role] : undefined}
-          >
-            <Select id="u-role" value={role} onChange={set("role")}>
-              {available.map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABEL[r]}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <div className="flex flex-wrap items-center justify-between gap-4 sm:col-span-2">
-            <p className="flex items-center gap-1.5 text-xs text-ink/50">
-              <Info className="size-3.5" /> Uma conta por função · o link expira
-              em 30 minutos.
-            </p>
-            <Btn type="submit" loading={saving}>
-              <UserPlus /> Criar e enviar convite
-            </Btn>
-          </div>
-        </form>
-      )}
+          <Input
+            id="u-pass"
+            type="password"
+            autoComplete="new-password"
+            value={v.password}
+            onChange={set("password")}
+          />
+        </Field>
+        <Field
+          label="Confirmar palavra-passe"
+          required
+          error={errors.confirm}
+          htmlFor="u-confirm"
+        >
+          <Input
+            id="u-confirm"
+            type="password"
+            autoComplete="new-password"
+            value={v.confirm}
+            onChange={set("confirm")}
+          />
+        </Field>
+        <Field
+          label="Função"
+          htmlFor="u-role"
+          className="sm:col-span-2"
+          hint={ROLE_HINT[role]}
+        >
+          <Select id="u-role" value={role} onChange={set("role")}>
+            {ROLES.map((r) => (
+              <option key={r} value={r}>
+                {roleLabel(r)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <div className="flex flex-wrap items-center justify-between gap-4 sm:col-span-2">
+          <p className="flex items-center gap-1.5 text-xs text-ink/50">
+            <Info className="size-3.5" /> O administrador é criado pela API · o
+            link expira em 30 minutos.
+          </p>
+          <Btn type="submit" loading={saving}>
+            <UserPlus /> Criar e enviar convite
+          </Btn>
+        </div>
+      </form>
     </Card>
   )
 }
@@ -590,7 +605,7 @@ export function AccountPage() {
           )}
         </div>
         {admin ? (
-          <NewUserForm takenRoles={users.map((u) => u.role)} onCreated={load} />
+          <NewUserForm onCreated={load} />
         ) : (
           <Card className="flex items-start gap-3 p-6 text-sm text-ink/60">
             <Info className="mt-0.5 size-4 shrink-0" />

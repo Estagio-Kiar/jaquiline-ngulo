@@ -422,7 +422,6 @@ const agenda: ResourceConfig<"agenda"> = {
   icon: CalendarDays,
   layout: "grid",
   siteSection: "Secção «Agenda»",
-  adminOnly: true,
   sort: (a, b) => b.data.localeCompare(a.data),
   fields: [
     {

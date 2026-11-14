@@ -10,7 +10,12 @@ import {
   Trash2,
 } from "lucide-react"
 
-import { isAdmin, useSession } from "@/admin/auth"
+import {
+  canDeleteContent,
+  canWriteContent,
+  isAdmin,
+  useSession,
+} from "@/admin/auth"
 import { useAdminData, useSlot, type DataKey } from "@/admin/data"
 import type { FieldDef, ResourceConfig } from "@/admin/resources"
 import {
@@ -436,10 +441,11 @@ function Thumb({
 export function ResourcePage({ config }: { config: ResourceConfig }) {
   const { items, loading, error, reload } = useSlot(config.key)
   const session = useSession()
-  const admin = isAdmin(session?.user.role)
-  const canDelete = admin
-  // Recursos «adminOnly» (ex.: Agenda) só podem ser alterados por administradores.
-  const canWrite = !config.adminOnly || admin
+  const role = session?.user.role
+  // Regras da API: todas as funções ativas criam e editam (ContentWriteGuards);
+  // só gestores e administradores removem (ContentDeleteGuards).
+  const canDelete = canDeleteContent(role)
+  const canWrite = config.adminOnly ? isAdmin(role) : canWriteContent(role)
   const open = (item: Item | null) => {
     if (canWrite) setEditing(item)
   }

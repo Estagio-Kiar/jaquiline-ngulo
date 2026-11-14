@@ -83,7 +83,11 @@ export type AgendaEvent = Timestamps & {
   imagem: string | null
 }
 
-export type UserRole = "admin" | "editor" | "user"
+/** Funções da API: `admin` (criado no arranque da API), `manager`, `editor` e `user`. */
+export type UserRole = "admin" | "manager" | "editor" | "user"
+
+/** Funções que um administrador pode atribuir (a API não cria novos `admin`). */
+export type AssignableRole = Exclude<UserRole, "admin">
 
 /** Utilizador do painel tal como devolvido por GET /admin/users. */
 export type PanelUser = {
@@ -135,4 +139,46 @@ export type GalleryPhoto = Timestamps & {
   slot: number
   image_url: string
   position: string | null
+}
+
+/* ------------------------------------------------------------------ */
+/* Onboarding (tours guiados do painel)                                */
+/* ------------------------------------------------------------------ */
+
+export type OnboardingStep = {
+  id: string
+  tourId: string
+  key: string
+  order: number
+  /** Valor do atributo `data-tour` do elemento a destacar. */
+  target: string
+  title: string
+  description: string
+  side: "top" | "right" | "bottom" | "left" | null
+  config: unknown
+}
+
+export type OnboardingTour = {
+  id: string
+  key: string
+  version: string
+  title: string
+  description: string
+  isActive: boolean
+  createdAt: string
+  steps: OnboardingStep[]
+}
+
+export type OnboardingStatus = "IN_PROGRESS" | "COMPLETED" | "DISMISSED"
+
+export type OnboardingProgress = {
+  id: string
+  userId: string
+  tourId: string
+  currentStepKey: string | null
+  status: OnboardingStatus
+  startedAt: string
+  completedAt: string | null
+  updatedAt: string
+  tour: OnboardingTour
 }

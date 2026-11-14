@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { RotateCcw } from "lucide-react"
 
+import { canDeleteContent, useSession } from "@/admin/auth"
 import { useSlot } from "@/admin/data"
 import { Badge, Btn, ImageField, Select, useToast } from "@/admin/ui"
 import { gallery as staticGallery } from "@/data/profile"
@@ -49,6 +50,9 @@ function SlotCard({
   onChanged: () => void
 }) {
   const toast = useToast()
+  const session = useSession()
+  // Repor a foto padrão apaga o registo: só gestores e administradores.
+  const canReset = canDeleteContent(session?.user.role)
   const [busy, setBusy] = useState(false)
   const fallback = staticGallery[slot] ?? staticGallery[0]
   const position = item?.position || "50% 25%"
@@ -70,6 +74,10 @@ function SlotCard({
 
   const reset = async () => {
     if (!item) return
+    if (!canReset) {
+      toast.error("Só gestores e administradores podem repor a foto padrão.")
+      return
+    }
     setBusy(true)
     try {
       await api.gallery.remove(item.id)
@@ -145,7 +153,7 @@ function SlotCard({
             )}
           </Select>
         </label>
-        {item && (
+        {item && canReset && (
           <Btn
             variant="ghost"
             size="sm"
